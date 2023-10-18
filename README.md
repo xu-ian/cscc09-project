@@ -22,6 +22,7 @@ The beta version should be a frontend website designer and backend data linking 
 - A dynamic or hardcoded data display field
 - Buttons with functionality like changing pages, or affecting visibility of components
 - Ability to link components to each other on backend 
+- Ability to create multiple pages on the website designer
 - Ability to navigate between multiple pages on website designer
 - Ability to 'deploy' a website.
 
