@@ -290,6 +290,15 @@ const editor  = grapesjs.init({
                   </div>`
       },*/
       {
+        id: 'dataField',
+        label: 'Data Display',
+        media: '',
+        content:`
+        <div class="data-out" data-gjs-droppable="false" data-ghs-draggable=".iteration" data-gjs-custom-name="Data-Output">
+          Placeholder Data
+        </div>`
+      },
+      {
         id: 'text-input',
         label: "Text Input",
         media: `<svg style="width:24px;height:24px" viewBox="0 0 24 24">
@@ -341,7 +350,7 @@ const editor  = grapesjs.init({
         media: ``,
         content: `
         <div class="row generic-background" data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Iterable">
-          <div class="row generic-iterable-background" data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
+          <div class="row generic-iterable-background iteration" data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
         </div>
         `
 
@@ -349,6 +358,8 @@ const editor  = grapesjs.init({
     ], 
   },
 });
+
+let forms = [];
 
 /* Temporary variable that should be replaced when api calls and database are created */
 let x3val = "";
@@ -397,9 +408,13 @@ editor.Blocks.add('row', {
 /* This triggeres whenever a component is clicked on */
 editor.on('component:selected', function(e){
   /* This prints the selected component */
-  //console.log(e)
+  console.log(e);
+  console.log(e.attributes['custom-name']);
+  console.log(e.attributes['custom-name'] == 'Iterable');
 
-  if(e.attributes.type == "row") {
+
+  if(e.attributes['custom-name'] == "Row") {
+    console.log("Row");
     /* This is a function that can update the trait section of the grapesjs editor.
        Strings are the field names and have string inputs
 
@@ -421,11 +436,72 @@ editor.on('component:selected', function(e){
           {id: 'form2', name: 'Form 2'},
         ],
       },]);
+  } else if(e.attributes['custom-name'] == 'Form' || e.attributes['custom-name'] == 'Text-Input'){
+    console.log("Form/TextInput");
+    e.setTraits([
+      "id",
+      "name",
+    ]);
+  } else if(e.attributes['custom-name'] == 'Button'){
+    console.log("Button");
+    e.setTraits([
+      "id",
+      "name",
+      {
+        type: "select",
+        label: 'Button Type',
+        name: 'button_type',
+        options: [
+          {id:'form_submit', name: "Submit Form"},
+          {id: 'page_change', name: 'Change Page'},
+          {id: 'modify_field', name: "Modify Field"},
+          {id: 'change_state', name: "Change State"},
+        ],
+      }
+    ]);
+  } else if(e.attributes['custom-name'] == 'Iterable'){
+    let form_options = [];
+    for(let i = 0; i < forms.length; i++){
+      const form = {id: forms[i].id, name: forms[i].name}
+      form_options.push(form);
+    }
+    e.setTraits([
+      "id",
+      "name",
+      {
+        type: "select",
+        label: 'Form',
+        name: 'form',
+        options: form_options,
+      }
+    ]); 
+  } else if(e.attributes['custom-name'] == 'Iteration'){
+    /* Parent of Iteration is always Iterable */
+    const iterable = e.parent();
+    const form = forms.find(function(form){
+      return form.id == iterable.attributes.attributes.form;
+    });
+    let field_options = [];
+    for(let i = 0; i < form.inputs.length; i++){
+      const field = {id: form.inputs[i].id, name: form.inputs[i].name};
+      field_options.push(field);
+    };
+    e.setTraits([
+      "id",
+      "name",
+      {
+        type: "select",
+        label: "Field",
+        name: 'field',
+        options: field_options,
+      }
+    ]);
+    console.log(iterable);
   }
 });
 
 /* This triggers whenever the information of a component is updated */
-editor.on('component:update', function(e){
+editor.on('component:update', function(e){ 
   /* The below statement prints the component */
   //console.log(e)
 
@@ -459,9 +535,7 @@ editor.on('component:update', function(e){
           ]
         };
       }
-      console.log(fieldOptions);
       if(fieldOptions == null) {
-        console.log("Form 3");
         e.setTraits(["id",
           "title",
           "comp",
@@ -477,7 +551,6 @@ editor.on('component:update', function(e){
           },
         ]);
       } else {
-        console.log("Form 1 or 2");
         e.setTraits(["id",
         "title",
         "comp",
@@ -495,6 +568,75 @@ editor.on('component:update', function(e){
         ]);  
       }
     }
+  } else if(e.attributes["custom-name"] == 'Button'){
+    if(e.attributes.attributes != null && e.attributes.attributes.button_type != "form_submit"){
+
+    } else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "page_change"){
+
+    } else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "modify_field"){
+
+    }else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "change_state"){
+
+    }else {
+      //There has been some problem with the field
+    }
+  } else if(e.attributes["custom-name"] == 'Form'){
+    let form = forms.find(function(form){
+      return form.id == e.cid;
+    });
+    form.name = e.attributes.attributes.name;
+  } else if(e.attributes["custom-name"] == 'Text-Input'){
+    //Replace with a single call to updateField and shift code to backend
+    if(e.parent().attributes['custom-name'] == 'Form'){
+      const parent = forms.find(function(form){
+        return form.id == e.parent().cid;        
+      });
+      if(parent != null){
+        
+        const input = parent.inputs.find(function(input){
+          return input.id == e.cid;
+        });
+        input.name = e.attributes.attributes.name;
+      }
+    }
   }
 });
 
+editor.on('component:add', function(e){
+  if(e.attributes['custom-name'] == 'Form'){
+    const formStruct = {id: e.cid, name: '', inputs: []};
+    /*Use forms array temporarily, use addForm(e.cid) once database is implemented*/
+    forms.push(formStruct);
+
+  }if(e.attributes['custom-name'] == 'Text-Input'){
+    //Currently only checks the parent. Should check recursive parents up to body
+    if(e.parent().attributes['custom-name'] == 'Form'){
+      const parent = forms.find(function(form){
+        return form.id == e.parent().cid;        
+      });
+      if(parent != null){
+        parent.inputs.push({id: e.cid, name: ''});
+      }
+    }
+  }
+});
+
+editor.on('component:remove', function(e){
+  if(e.attributes['custom-name'] == 'Form' && forms.length > 0){
+    console.log(forms);
+    forms.splice(forms.indexOf(forms.find(function(form){
+      return form.id == e.cid;
+    })), 1);
+  } else if(e.attributes['custom-name'] == 'Text-Input' && forms.length > 0){
+    if(e.parent().attributes['custom-name'] == 'Form'){
+      const parent = forms.find(function(form){
+        return form.id == e.parent().cid;        
+      });
+      if(parent != null){
+        parent.inputs.splice(parent.inputs.indexOf(parent.inputs.find(function(input){
+          return input.id == e.cid;
+        })), 1);
+      }
+    }
+  }
+});
