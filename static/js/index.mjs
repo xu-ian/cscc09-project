@@ -1,7 +1,8 @@
 import grapesjs from '../../node_modules/grapesjs/dist/grapes.mjs';
 import {getChoice, getSelectForm, getOperations, getDestination} from './helper.mjs';
 import {addForm, getForms, getForm, removeForm, updateFormName, addDisplay, removeDisplay, 
-        updateDisplay, addDatafield, removeDatafield, getDatafield, addField, updateField, removeField, 
+        updateDisplay, addDatafield, createDatafield, removeDatafield, updateDatafield, getDatafield, 
+        deleteDatafield, addField, createField, updateField, removeField, deleteField, 
         addPage, removePage, getPages, getPage, addButton, getButton, removeButton} from './api.mjs'
 
 const editor  = grapesjs.init({
@@ -531,13 +532,13 @@ editor.on('component:selected', function(e){
     const iterator = iteration.parent();
     if(iteration.attributes['custom-name'] == 'Iteration'){
       const formId = iterator.attributes.attributes.form;
-      console.log(formId);
       if(formId){
         getForm(formId, function(err, res){
           if(err){
             return console.error(err);
           }
           let field_options = [];
+          console.log(res.fields);
           for(let i = 0; i < res.fields.length; i++){
             field_options.push({id: res.fields[i].fieldId, name: res.fields[i].name});
           }
@@ -566,17 +567,19 @@ editor.on('component:update', function(e){
   /* The below statement prints the component */
   /* Statement below ensures no infinite component update loop occurs */
   if(prevent_endless_component_update_switch){
+    const attributes = e.attributes.attributes; 
     if(e.attributes["custom-name"] == "Iterator") {
 
     } else if(e.attributes["custom-name"] == 'Button'){
       modify_button_traits(e);
     } else if(e.attributes["custom-name"] == 'Form'){
-      updateFormName(e.ccid, e.attributes.attributes.name);
+      updateFormName(e.ccid, attributes.name);
     } else if(e.attributes["custom-name"] == 'Text-Input'){
-      updateField(e.attributes.attributes.name);
+      updateField(e.ccid, attributes.name);
     } else if(e.attributes["custom-name"] == 'Iterable'){
-      const attributes = e.attributes.attributes; 
       updateDisplay(e.ccid, attributes.name, parseInt(attributes.elements), attributes.navigateable, attributes.form);
+    } else if(e.attributes["custom-name"] == 'Data-Out'){
+      updateDatafield(e.ccid, attributes.name, attributes.field);
     }
   } else{
     prevent_endless_component_update_switch = true;
@@ -592,10 +595,14 @@ editor.on('component:add', function(e){
   }else if(e.attributes['custom-name'] == 'Text-Input'){
     //Currently only checks the parent. Should check recursive parents up to body
     if(e.parent().attributes['custom-name'] == 'Form'){
-      addField(e.parent().ccid, '', e.ccid, 'form');
+      addField(e.parent().ccid, '', e.ccid);
     }
   } else if(e.attributes["custom-name"] == 'Iterable'){
     addDisplay(e.ccid);
+  } else if(e.attributes["custom-name"] == 'Data-Out'){
+    if(e.parent().attributes['custom-name'] == 'Iteration'){
+      addDatafield(e.parent().parent().ccid, '', e.ccid);
+    }
   }
 });
 
@@ -603,10 +610,12 @@ editor.on('component:remove', function(e){
   if(e.attributes['custom-name'] == 'Form'){
     removeForm(e.ccid);
   } else if(e.attributes['custom-name'] == 'Text-Input'){
-    if(e.parent().attributes['custom-name'] == 'Form'){
-      removeField(e.parent().ccid, e.ccid, 'form');
+    if(e.parent().attributes["custom-name"] == 'Form'){
+      removeField(e.parent().ccid, e.ccid);
     }
   } else if(e.attributes["custom-name"] == 'Iterable'){
     removeDisplay(e.ccid);
+  } else if(e.attributes["custom-name"] == 'Data-Out'){
+    removeDatafield(e.parent().parent().ccid, '', e.ccid);
   }
 });

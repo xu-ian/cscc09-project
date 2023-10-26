@@ -29,6 +29,7 @@ export class Models {
       webId: String,
       name: String,
       field: {type: Schema.Types.ObjectId, ref: 'Field'},
+      display: {type: Schema.Types.ObjectId, ref: 'Display'},
       date: {type: Date, default: Date.now},
     });
     const displaySchema = new Schema({
@@ -43,6 +44,7 @@ export class Models {
     });
     const fieldSchema = new Schema({
       fieldId: String,
+      form: {type: Schema.Types.ObjectId, ref: 'Form'},
       webId: String,
       name: String,
       date: {type: Date, default: Date.now},

@@ -173,20 +173,32 @@ export function removeDisplay(displayId, web="Default"){
   - Value: Value of the datafield that should be displayed
  */
 
-/* Creates a new datafield */
-export function addDatafield(dfId, web="Default"){
-  axios.post('/api/website/'+web+'/datafield/',
-    {
-      'datafieldId': dfId,
+export function addDatafield(displayId, df, dfId, web="Default"){
+  send("PATCH", "/api/website/"+web+"/display/"+displayId,
+  {action: "add", field: df, fieldId: dfId},
+  function(err, res){
+    if(err){
+      console.error(err);
+    } else {
+      console.log(res);
     }
-  ).then((response) =>{
-    console.log(response);
-  }, (error) =>{
-    console.log(error);
+  });
+}
+
+/* Creates a new datafield not attached to display */
+export function createDatafield(dfId, web="Default"){
+  send("POST", "/api/website/"+web+"/datafield/", 
+  {datafieldid: dfId, name:""},
+  function(err, res){
+    if(err){
+      console.error(err);
+    } else {
+      console.log(res);
+    }
   });
 };
 
-/* Gets a datafield */
+/* Gets a datafield attached to display */
 export function getDatafield(dfId, web="Default"){
   axios.post('/api/website/'+web+'/datafield/'+dfId)
   .then((response) =>{
@@ -198,13 +210,41 @@ export function getDatafield(dfId, web="Default"){
   });
 };
 
-/* Removes a datafield by id */
-export function removeDatafield(dfId, web="Default"){
-  axios.post('/api/website/'+web+'/datafield/'+dfId)
-  .then((response) =>{
-    console.log(response);
-  }, (error) =>{
-    console.log(error);
+/** Updates a datafield's name or data source */
+export function updateDatafield(dfId, df, field, web="Default"){
+  send("PATCH", "/api/website/"+web+"/datafield/"+dfId,
+  {name: df, field: field},
+  function(err, res){
+    if(err){
+      console.error(err);
+    } else{
+      console.log(res);
+    }
+  })
+}
+
+/** Removes an datafield attached to a display by id */
+export function removeDatafield(displayId, dfId, web="Default"){
+  send("PATCH", "/api/website/"+web+"/display/"+displayId,
+  {action: "remove", fieldid: dfId},
+  function(err, res){
+    if(err){
+      console.error(err);
+    } else {
+      console.log(res);
+    }
+  });
+};
+
+/* Removes a datafield not attached to display by id */
+export function deleteDatafield(dfId, web="Default"){
+  send('DELETE', '/api/website/'+web+'/datafield/'+dfId, null,
+  function(err, res){
+    if(err){
+      console.error(err);
+    } else {
+      console.log(res);
+    }
   });
 };
 
@@ -212,8 +252,8 @@ export function removeDatafield(dfId, web="Default"){
 
 /* Adds a field to the form/display/anything else 
    type = 'display' or 'form' or nothing else yet. */
-export function addField(containerId, field, fieldId, type, web="Default"){
-  send("PATCH", '/api/website/'+web+'/'+type+'/'+containerId, {
+export function addField(formId, field, fieldId, web="Default"){
+  send("PATCH", '/api/website/'+web+'/form/'+formId, {
     action: "add",
     field: field, /* Does not have to be unique */
     fieldId: fieldId, /* Has to be unique */
@@ -226,8 +266,15 @@ export function addField(containerId, field, fieldId, type, web="Default"){
   });
 };
 
+/** Creates a field not associated to anything */
+export function createField(fieldId, name, web="Default"){
+
+}
+
+/** Updates the name of a field by id */
 export function updateField(fieldId, field, web="Default"){
-  send("PATCH", '/api/website/'+web+"/field/"+fieldId, {field: field}, function(err, res){
+  send("PATCH", '/api/website/'+web+"/field/"+fieldId, 
+       {name: field}, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -238,8 +285,8 @@ export function updateField(fieldId, field, web="Default"){
 
 /* Removes a field from the form/display/anything else
    type = 'display' or 'form' or nothing else yet */
-export function removeField(containerId, fieldId, type, web="Default"){
-  send("PATCH", '/api/website/'+web+'/'+type+'/'+containerId, {
+export function removeField(formId, fieldId, web="Default"){
+  send("PATCH", '/api/website/'+web+'/form/'+formId, {
     "action": "remove",
     "fieldId": fieldId,
   },function(err, res){
@@ -251,6 +298,10 @@ export function removeField(containerId, fieldId, type, web="Default"){
   });
 };
 
+/** Removes a field not associated with a field by id */
+export function deleteField(fieldId, web="Default"){
+
+}
 
 /*********************PAGES API*************************/
 

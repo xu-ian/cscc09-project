@@ -146,7 +146,7 @@ app.patch("/api/website/:webid/form/:formid/", function(req, res, next){
             return res.status(409).end("Duplicate Entry")
           } else {
             /* Creates the field */
-            models.field.create({fieldId: fieldId, webId: webId, name: fieldName}).then(function(field){
+            models.field.create({fieldId: fieldId, webId: webId, name: fieldName, form: form._id}).then(function(field){
               /* Updates the form with the new field */
               form.fields.push(field._id);
               models.form.updateOne({formId: formId, webId: webId}, {fields: form.fields}).exec().then(function(returns){
@@ -272,26 +272,21 @@ app.patch("/api/website/:webid/display/:displayid/", function(req, res, next){
   const ele = req.body.elements;
   const nav = req.body.navigateable;
   const form = req.body.form;
-  const fieldName = req.body.field;
-  const fieldId = req.body.fieldId;
-  let formId = null;
+  const dataoutName = req.body.field;
+  const dataoutId = req.body.fieldId;
 
   models.display.findOne({webId: webId, displayId: displayId}).populate('fields').exec().then(function(display){
     if(display == null && action != "remove"){//Errors out if you are not removing a field and the display does not exist
       return res.status(404).end("Display not found");
     }
     if(action == "self"){//Modifies properties of the display
-      console.log(ele && typeof ele != "number");
-      console.log(nav && typeof nav != "boolean");
-      console.log(displayName && typeof displayName != "string");
-      console.log(form && typeof form != "string");
       if((ele && typeof ele != "number") || (nav && typeof nav != "boolean") || 
           (displayName && typeof displayName != "string") || (form && typeof form != "string")){
         return res.status(422).end("Invalid Inputs");
       }
       models.form.findOne({webId: webId, formId: form}).exec().then(function(form){
         if(form == null){
-          return res.status(404).end("Form not found");
+          form = {_id:null};
         }
         models.display.updateOne({displayId: displayId, webId: webId}, 
           {name: displayName, elements: ele, nav: nav, form: form._id}).exec().then(function(returns){
@@ -311,16 +306,19 @@ app.patch("/api/website/:webid/display/:displayid/", function(req, res, next){
         return res.status(500).end(err);
       });
     } else if(action == "add"){//Adds a field to the display
-      models.field.findOne({fieldId: fieldId, webId: webId}).exec().then(function(field){
+      if(typeof dataoutId != "string" || typeof dataoutName != "string"){
+        return res.status(422).end("Invalid Inputs");
+      }
+      models.dataout.findOne({dataoutId: dataoutId, webId: webId}).exec().then(function(field){
         /* Fails if the field already exists */
         if(field != null){
           return res.status(409).end("Duplicate Entry")
         } else {
           /* Creates the field */
-          models.dataout.create({dataoutId: fieldId, webId: webId, name: fieldName}).then(function(field){
+          models.dataout.create({dataoutId: dataoutId, webId: webId, name: dataoutName, display: display._id}).then(function(dataout){
             /* Updates the form with the new field */
             display.depopulate();
-            display.fields.push(field._id);
+            display.fields.push(dataout._id);
             models.display.updateOne({displayId: displayId, webId: webId}, {fields: display.fields}).exec().then(function(returns){
               return res.status(200).json(returns);
             }).catch(function(err){
@@ -337,14 +335,17 @@ app.patch("/api/website/:webid/display/:displayid/", function(req, res, next){
         return res.status(500).end(err);
       });
     } else if(action == "remove"){//Removes a field from the display
-      models.field.findOne({fieldId: fieldId, webId: webId}).exec().then(function(field){
+      if(typeof dataoutId != "string" || typeof dataoutName != "string"){
+        return res.status(422).end("Invalid Inputs");
+      }
+      models.dataout.findOne({dataoutId: dataoutId, webId: webId}).exec().then(function(field){
         if(field == null){
           return res.status(404).end("Field not found");
         } else {
-          models.field.deleteOne({fieldId: fieldId, webId: webId}).then(function(result){
+          models.dataout.deleteOne({dataoutId: dataoutId, webId: webId}).then(function(result){
             if(display != null){
               const foundindex = display.fields.indexOf(display.fields.find(function(field){
-                return field.fieldId == fieldId;
+                return field.dataoutId == dataoutId;
               }));
               display.depopulate('fields');
               display.fields.splice(foundindex, 1);
@@ -402,6 +403,9 @@ app.post("/api/website/:webid/field/", function(req, res, next){
   const webId = req.params.webid;
   const fieldId = req.body.fieldid;
   const name = req.body.name;
+  if(typeof fieldId != "string" || typeof name != "string"){
+    return res.status(422).end("Malformed Input");
+  }
   models.field.findOne({webId: webId, fieldId: fieldId}).exec().then(function(field){
     if(field != null){
       return res.status(409).end("Field already exists");
@@ -422,7 +426,10 @@ app.patch("/api/website/:webid/field/:fieldid/", function(req, res, next){
   const webId = req.params.webid;
   const fieldId = req.params.fieldid;
   const name = req.body.name;
-
+  if(typeof fieldId != "string" || typeof name != "string"){
+    return res.status(422).end("Malformed Input");
+  }
+  console.log(webId, fieldId, name);
   models.field.findOne({webId: webId, fieldId: fieldId}).exec().then(function(field){
     if(field == null){
       return res.status(404).end("Field not found");
@@ -441,7 +448,7 @@ app.patch("/api/website/:webid/field/:fieldid/", function(req, res, next){
 });
 
 /** Removes a field by field Id */
-app.delete("/api/website/:webid/field/:fieldid", function(req, res,next){
+app.delete("/api/website/:webid/field/:fieldid/", function(req, res,next){
   const webId = req.params.webid;
   const fieldId = req.params.fieldid;
   models.field.findOne({webId: webId, fieldId: fieldId}).exec().then(function(field){
@@ -457,6 +464,83 @@ app.delete("/api/website/:webid/field/:fieldid", function(req, res,next){
     }
   });
 });
+
+/** Adds a field to the database */
+app.post("/api/website/:webid/datafield/", function(req, res, next){
+  const webId = req.params.webid;
+  const fieldId = req.body.fieldid;
+  const name = req.body.name;
+  if(typeof fieldId != "string" || typeof name != "string"){
+    return res.status(422).end("Malformed Input");
+  }
+  models.dataout.findOne({webId: webId, dataoutId: fieldId}).exec().then(function(field){
+    if(field != null){
+      return res.status(409).end("Data Field already exists");
+    } else {
+      const field = {dataoutId: fieldId, webId: webId, name: name};
+      models.dataout.create(field).then(function(ack){
+        return res.status(200).json(ack);
+      }).catch(function(err){
+        console.log(err);
+        return res.status(500).end(err);
+      })
+    }
+  });
+});
+
+/** Updates a field by field Id */
+app.patch("/api/website/:webid/datafield/:fieldid/", function(req, res, next){
+  const webId = req.params.webid;
+  const fieldId = req.params.fieldid;
+  const inputfield = req.body.field;
+  const name = req.body.name;
+  if(typeof fieldId != "string" || typeof name != "string" || typeof inputfield != "string"){
+    return res.status(422).end("Malformed Input");
+  }
+  console.log(webId, fieldId, name);
+  models.dataout.findOne({webId: webId, dataoutId: fieldId}).exec().then(function(field){
+    if(field == null){
+      return res.status(404).end("Data field not found");
+    } else {
+      models.field.findOne({webId: webId, fieldId: inputfield}).exec().then(
+        function(inputfieldvalue){
+          if(inputfieldvalue != null){
+            inputfieldvalue = inputfieldvalue._id;
+          }
+          models.dataout.updateOne({webId: webId, dataoutId: fieldId}, 
+              {name: name, field: inputfieldvalue}).exec().then(function(ack){
+            return res.status(200).json(ack);
+          }).catch(function(err){
+            console.log(err);
+            return res.status(500).end(err);
+          });
+        }
+      );
+    }
+  }).catch(function(err){
+    console.log(err);
+    return res.status(500).end(err);
+  });
+});
+
+/** Removes a field by field Id */
+app.delete("/api/website/:webid/datafield/:fieldid/", function(req, res,next){
+  const webId = req.params.webid;
+  const fieldId = req.params.fieldid;
+  models.dataout.findOne({webId: webId, dataoutId: fieldId}).exec().then(function(field){
+    if(field == null){
+      return res.status(404).end("Field not found");
+    }else {
+      models.dataout.deleteOne({webId: webId, dataoutId: fieldId}).exec().then(function(ack){
+        return res.status(200).json(ack);
+      }).catch(function(err){
+        console.log(err);
+        return res.status(500).end(err);
+      });
+    }
+  });
+});
+
 
 export const server = createServer(app).listen(PORT, function (err) {
   if (err) console.log(err);

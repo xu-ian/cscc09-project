@@ -309,7 +309,7 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/displayid/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"add", field: "testfield2", fieldId: "testfieldId2"}))
+      .send(JSON.stringify({action:"add", field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
@@ -324,7 +324,7 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/displayid/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"add", field: "testfield2", fieldId: "testfieldId2"}))
+      .send(JSON.stringify({action:"add", field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) =>{
         console.log(res.body);
         console.log(res.text);
@@ -381,9 +381,9 @@ describe("Testing API", () => {
 
   it("it should return all displays for the website if no display id is provided when getting a display", function(done){
     chai.request(server)
-      .get("/api/website/testweb/display/")
+      .post("/api/website/testweb/display/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({"id":"displayid2", "name": "testdisplay2"}))
+      .send(JSON.stringify({"id":"displayid2", "name": "testdisplay"}))
       .end((err, res) => {
         chai.request(server)
          .get("/api/website/testweb/display/")
@@ -400,7 +400,7 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/displayid")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"remove", field: "testfield2", fieldId: "testfieldId2"}))
+      .send(JSON.stringify({action:"remove", field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
@@ -415,7 +415,7 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/displayid/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"remove", field: "testfield2", fieldId: "invalidfieldId2"}))
+      .send(JSON.stringify({action:"remove", field: "dataout", fieldId: "invalid"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(404);
@@ -428,21 +428,21 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/displayid")
       .set("content-type", "application/json")
-      .send(JSON.stringify({field: "testfield2", fieldId: "testfieldId2"}))
+      .send(JSON.stringify({field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
         expect(res.text).to.equal("Invalid Inputs");
         chai.request(server)
           .patch("/api/website/testweb/display/displayid")
-          .send(JSON.stringify({action:"remove2", fieldId: "testfieldId2"}))
+          .send(JSON.stringify({action:"remove", fieldId: "dataoutId"}))
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.status).to.equal(422);
             expect(res.text).to.equal("Invalid Inputs");
             chai.request(server)
               .patch("/api/website/testweb/display/displayid")
-              .send(JSON.stringify({action:"add", field: "testfield2"}))
+              .send(JSON.stringify({action:"add", field: "dataout"}))
               .end((err, res) => {
                 expect(err).to.be.null;
                 expect(res.status).to.equal(422);
@@ -457,7 +457,7 @@ describe("Testing API", () => {
     chai.request(server)
       .patch("/api/website/testweb/display/invalidid/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"add", field: "testfield2", fieldId: "testfieldId2"}))
+      .send(JSON.stringify({action:"add", field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(404);
@@ -465,7 +465,7 @@ describe("Testing API", () => {
         chai.request(server)
           .patch("/api/website/testweb/display/invalidid/")
           .set("content-type", "application/json")
-          .send(JSON.stringify({action:"remove", field: "testfield2", fieldId: "testfieldId2"}))
+          .send(JSON.stringify({action:"remove", field: "dataout", fieldId: "dataoutId"}))
           .end((err, res) =>{
             expect(err).to.be.null;
             expect(res.status).to.equal(404);
@@ -500,13 +500,13 @@ describe("Testing API", () => {
 
   it("it should add a field to the database", function(done){
     chai.request(server)
-      .post("/api/website/:webid/field/")
+      .post("/api/website/testweb/field/")
       .set("content-type", "application/json")
       .send(JSON.stringify({"fieldid":"fieldId3", "name": "testfield3"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        expect(res.body.webId).to.equal("webId");
+        expect(res.body.webId).to.equal("testweb");
         expect(res.body.name).to.equal("testfield3");
         expect(res.body.fieldId).to.equal("fieldId3");
         console.log(res.body);
@@ -516,14 +516,14 @@ describe("Testing API", () => {
 
   it("it should not add a field to the database if information is missing", function(done){
     chai.request(server)
-      .post("/api/website/:webid/field/")
+      .post("/api/website/testweb/field/")
       .set("content-type", "application/json")
       .send(JSON.stringify({"name": "testfield3"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
         chai.request(server)
-          .post("/api/website/:webid/field/")
+          .post("/api/website/testweb/field/")
           .set("content-type", "application/json")
           .send(JSON.stringify({"fieldid":"fieldId3"}))
           .end((err, res) => {
@@ -536,13 +536,139 @@ describe("Testing API", () => {
 
   it("it should not add a field if it already exists", function(done){
     chai.request(server)
-      .post("/api/website/:webid/field/")
+      .post("/api/website/testweb/field/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({"fieldid3":"fieldId3", "name": "testfield3"}))
+      .send(JSON.stringify({"fieldid":"fieldId3", "name": "testfield3"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(409);
         done();
       });
+  });
+
+  it("it should update the field name of a field id", function(done){
+    chai.request(server)
+      .patch("/api/website/testweb/field/fieldId3")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"name": "testfield4"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.acknowledged).to.equal(true);
+        expect(res.body.modifiedCount).to.equal(1);
+        expect(res.body.matchedCount).to.equal(1);
+        done();
+      });
+  });
+
+  it("it should not update the field if input is malformed", function(done){
+    chai.request(server)
+      .patch("/api/website/testweb/field/fieldId3")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"none": "testfield3"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(422);
+        done();
+      });
+  });
+
+  it("it should add a datafield to the database", function(done){
+    chai.request(server)
+      .post("/api/website/testweb/datafield/")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"fieldid":"datafieldId3", "name": "datatestfield3"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.webId).to.equal("testweb");
+        expect(res.body.name).to.equal("datatestfield3");
+        expect(res.body.dataoutId).to.equal("datafieldId3");
+        console.log(res.body);
+        done();
+      });
+  });
+
+  it("it should not add a datafield to the database if information is missing", function(done){
+    chai.request(server)
+      .post("/api/website/testweb/datafield/")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"name": "datatestfield3"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(422);
+        chai.request(server)
+          .post("/api/website/testweb/datafield/")
+          .set("content-type", "application/json")
+          .send(JSON.stringify({"fieldid":"datafieldId3"}))
+          .end((err, res) => {
+            expect(err).to.be.null;
+            expect(res.status).to.equal(422);
+            done();
+          });
+      });
+  });
+
+  it("it should not add a datafield if it already exists", function(done){
+    chai.request(server)
+      .post("/api/website/testweb/datafield/")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"fieldid":"datafieldId3", "name": "datatestfield3"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(409);
+        done();
+      });
+  });
+
+  it("it should update the datafield name and field of a datafield id", function(done){
+    chai.request(server)
+      .patch("/api/website/testweb/datafield/datafieldId3")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"name": "datatestfield4", "field": "fieldId3"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.acknowledged).to.equal(true);
+        expect(res.body.modifiedCount).to.equal(1);
+        expect(res.body.matchedCount).to.equal(1);
+        done();
+      });
+  });
+
+  it("it should not update the field if input is malformed", function(done){
+    chai.request(server)
+      .patch("/api/website/testweb/datafield/datafieldId3")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"none": "datatestfield3"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(422);
+        done();
+      });
+  });
+
+  it("it should delete the field given a valid field id", function(done){
+    chai.request(server)
+    .delete("/api/website/testweb/datafield/datafieldId3")
+    .end((err, res) =>{
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.acknowledged).to.equal(true);
+      expect(res.body.deletedCount).to.equal(1);
+      done();
+    });
+  });
+
+  it("it should delete the field given a valid field id", function(done){
+    chai.request(server)
+    .delete("/api/website/testweb/field/fieldId3")
+    .end((err, res) =>{
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.acknowledged).to.equal(true);
+      expect(res.body.deletedCount).to.equal(1);
+      done();
+    });
   });
 });
