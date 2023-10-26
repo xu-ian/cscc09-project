@@ -1,4 +1,8 @@
-import grapesjs from '../../node_modules/grapesjs/dist/grapes.mjs'
+import grapesjs from '../../node_modules/grapesjs/dist/grapes.mjs';
+import {getChoice, getSelectForm, getOperations, getDestination} from './helper.mjs';
+import {addForm, getForms, getForm, removeForm, updateFormName, addDisplay, removeDisplay, 
+        updateDisplay, addDatafield, removeDatafield, getDatafield, addField, updateField, removeField, 
+        addPage, removePage, getPages, getPage, addButton, getButton, removeButton} from './api.mjs'
 
 const editor  = grapesjs.init({
   height: '100hv',
@@ -290,13 +294,13 @@ const editor  = grapesjs.init({
                   </div>`
       },*/
       {
-        id: 'dataField',
-        label: 'Data Display',
-        media: '',
-        content:`
-        <div class="data-out" data-gjs-droppable="false" data-ghs-draggable=".iteration" data-gjs-custom-name="Data-Output">
-          Placeholder Data
-        </div>`
+        id: 'datafield',
+        label: "Data Display",
+        media: `<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                  <path d="M 1 1 L 1 4 L 6 4 L 6 13 L 8 13 L 8 4 L 13 4 L 13 1 Z"/>
+                  </svg>`,
+        content: `<div class="output data-output centered" data-gjs-droppable="false" 
+          data-gjs-draggable="true" data-gjs-custom-name="Data-Out">Placeholder</div>`
       },
       {
         id: 'text-input',
@@ -316,7 +320,7 @@ const editor  = grapesjs.init({
                   <path d="M 1 1 L 1 23 L 12 23 L 12 1 L 2 1 
                     L 2 2 L 11 2 L 11 22 L 2 22 L 2 1 Z 
                     M 13 1 L 13 23 L 24 23 L 24 1 L 14 1 
-                    L 14 2 L 23 2 L 23 22 L 14 22 L 14 1 Z"
+                    L 14 2 L 23 2 L 23 22 L 14 22 L 14 1 Z/>"
                 </svg>`,
         content: `
         <div class="row row-cell" data-gjs-droppable="true" data-gjs-draggable="true" data-gjs-custom-name="Row">
@@ -332,25 +336,32 @@ const editor  = grapesjs.init({
                     A 1 1 0 0 0 23 22 L 23 2 A 1 1 0 0 0 22 1 L 3 1 L 3 2 L 21 2 
                     C 22 2 22 2 22 3 L 22 21 C 22 22 22 22 21 22 L 3 22 C 2 22 2 22 2 21 
                     L 2 3 C 2 2 2 2 3 2 L 3 1 Z M 3 4 L 20 4 L 20 6 L 3 6 Z M 3 8 L 20 8 
-                    L 20 10 L 3 10 Z M 3 12 L 20 12 L 20 14 L 3 14 Z"
+                    L 20 10 L 3 10 Z M 3 12 L 20 12 L 20 14 L 3 14 Z/>"
                 </svg>
       `,
         content: `
         <form class="generic-background form" data-gjs-droppable=".button, .input" 
          data-gjs-draggable="true" data-gjs-custom-name="Form">
-          <input class="input text-input centered" data-gjs-droppable="false" 
-           data-gjs-draggable="true" data-gjs-custom-name="Text-Input">
           <input class="button button-class centered" type="button" value="Click Me" 
-           data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Button">
+           data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Form-Button">
         </form>`
       },
       {
         id: 'iterative-output-block',
         label: "Iterative Output",
-        media: ``,
+        media: `<svg style="width:24px; height:24px" viewBox=0 0 24 24>
+                  <path d="M 2 1 A 1 1 0 0 0 1 2 L 1 22 A 1 1 0 0 0 2 23 L 22 23 
+                    A 1 1 0 0 0 23 22 L 23 2 A 1 1 0 0 0 22 1 L 3 1 L 3 2 L 21 2 
+                    C 22 2 22 2 22 3 L 22 21 C 22 22 22 22 21 22 L 3 22 C 2 22 2 22 2 21 
+                    L 2 3 C 2 2 2 2 3 2 L 3 1 Z M 3 20 A 1 1 0 0 0 4 21 L 20 21 
+                    A 1 1 0 0 0 21 20 L 21 16 A 1 1 0 0 0 20 15 L 4 15 A 1 1 0 0 0 3 16 Z 
+                    M 3 13 A 1 1 0 0 0 4 14 L 20 14 A 1 1 0 0 0 21 13 L 21 10 A 1 1 0 0 0 20 9 
+                    L 4 9 A 1 1 0 0 0 3 10 L 3 13 M 4 3 A 1 1 0 0 0 3 4 L 3 7 A 1 1 0 0 0 4 8 
+                    L 20 8 A 1 1 0 0 0 21 7 L 21 4 A 1 1 0 0 0 20 3 Z"/>
+                </svg>`,
         content: `
-        <div class="row generic-background" data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Iterable">
-          <div class="row generic-iterable-background iteration" data-gjs-droppable="false" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
+        <div class="row generic-background" data-gjs-draggable="true" data-gjs-custom-name="Iterable">
+          <div class="generic-iterable-background iteration" data-gjs-droppable=".output" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
         </div>
         `
 
@@ -359,10 +370,52 @@ const editor  = grapesjs.init({
   },
 });
 
-let forms = [];
+let prevent_endless_component_update_switch = true;
 
-/* Temporary variable that should be replaced when api calls and database are created */
-let x3val = "";
+/* Function that modify the traits tab if a button is selected */
+function modify_button_traits(e){
+  let traits = ["id", "name",
+    {
+      type: "select",
+      label: 'Button Type',
+      name: 'button_type',
+      options: [
+        {id: 'modify_field', name: "Modify Field"},
+        {id: 'change_state', name: "Change State"},
+      ],
+    },
+  ];
+  if(e.attributes.attributes['button_type'] == 'modify_field'){
+    if(e.attributes.attributes['operation'] == 'aggregate_sum' ||
+        e.attributes.attributes['operation'] == 'mean'){
+
+    }
+    else {
+      traits.push(getOperations("numeric"));
+      if(e.attributes.attributes['input_1_type'] == 'Field'){
+        traits.push(getSelectForm("First"));
+      } else {
+        traits.push("First Field");
+      }
+      traits.push(getChoice("input_1_type"));
+      if(e.attributes.attributes['input_2_type'] == 'Field'){
+        traits.push(getSelectForm("Second"));
+      } else {
+        traits.push("Second Field");
+      }
+      traits.push(getChoice("input_2_type"));
+      traits.push(getDestination("field"));
+    }
+  } else if(e.attributes.attributes['button_type'] == 'change_state'){
+
+    traits.push(getOperations(null));
+    console.log(e.attributes);
+    if(e.attributes.attributes['operation'] == 'page_change'){
+      traits.push(getDestination("page"));
+    }
+  }
+  e.setTraits(traits);
+}
 
 /* This triggers whenever a component is added/deleted or modified on the canvas */
 editor.on('storage:store', function(e){
@@ -409,10 +462,6 @@ editor.Blocks.add('row', {
 editor.on('component:selected', function(e){
   /* This prints the selected component */
   console.log(e);
-  console.log(e.attributes['custom-name']);
-  console.log(e.attributes['custom-name'] == 'Iterable');
-
-
   if(e.attributes['custom-name'] == "Row") {
     console.log("Row");
     /* This is a function that can update the trait section of the grapesjs editor.
@@ -436,207 +485,128 @@ editor.on('component:selected', function(e){
           {id: 'form2', name: 'Form 2'},
         ],
       },]);
-  } else if(e.attributes['custom-name'] == 'Form' || e.attributes['custom-name'] == 'Text-Input'){
+  } else if(e.attributes['custom-name'] == 'Form' || e.attributes['custom-name'] == 'Text-Input' ||
+            e.attributes['custom-name'] == 'Iteration'){
     console.log("Form/TextInput");
     e.setTraits([
-      "id",
       "name",
     ]);
   } else if(e.attributes['custom-name'] == 'Button'){
     console.log("Button");
-    e.setTraits([
-      "id",
-      "name",
-      {
-        type: "select",
-        label: 'Button Type',
-        name: 'button_type',
-        options: [
-          {id:'form_submit', name: "Submit Form"},
-          {id: 'page_change', name: 'Change Page'},
-          {id: 'modify_field', name: "Modify Field"},
-          {id: 'change_state', name: "Change State"},
-        ],
-      }
-    ]);
+    modify_button_traits(e);
   } else if(e.attributes['custom-name'] == 'Iterable'){
-    let form_options = [];
-    for(let i = 0; i < forms.length; i++){
-      const form = {id: forms[i].id, name: forms[i].name}
-      form_options.push(form);
-    }
-    e.setTraits([
-      "id",
-      "name",
-      {
-        type: "select",
-        label: 'Form',
-        name: 'form',
-        options: form_options,
+    getForms(function(res){
+      let form_options = [];
+      for(let i = 0; i < res.length; i++){
+        form_options.push({id: res[i].formId, name: res[i].name});
       }
-    ]); 
-  } else if(e.attributes['custom-name'] == 'Iteration'){
-    /* Parent of Iteration is always Iterable */
-    const iterable = e.parent();
-    const form = forms.find(function(form){
-      return form.id == iterable.attributes.attributes.form;
+      e.setTraits([
+        "id",
+        "name",
+        {
+          type: 'number',
+          label: "Elements per page",
+          name: 'elements',
+          placeholder: 'Select number of items per page',
+          min: 0,
+          step: 1,
+        },{
+          type: 'checkbox',
+          label: 'Page Navigation',
+          name: 'navigateable',
+          valueTrue: 'true',
+          valueFalse: 'false',
+        },
+        {
+          type: "select",
+          label: 'Form',
+          name: 'form',
+          options: form_options,
+        }
+      ]);   
     });
-    let field_options = [];
-    for(let i = 0; i < form.inputs.length; i++){
-      const field = {id: form.inputs[i].id, name: form.inputs[i].name};
-      field_options.push(field);
-    };
-    e.setTraits([
-      "id",
-      "name",
-      {
-        type: "select",
-        label: "Field",
-        name: 'field',
-        options: field_options,
+  } else if(e.attributes['custom-name'] == 'Data-Out'){
+    console.log("Data out");
+    const iteration = e.parent();
+    const iterator = iteration.parent();
+    if(iteration.attributes['custom-name'] == 'Iteration'){
+      const formId = iterator.attributes.attributes.form;
+      console.log(formId);
+      if(formId){
+        getForm(formId, function(err, res){
+          if(err){
+            return console.error(err);
+          }
+          let field_options = [];
+          for(let i = 0; i < res.fields.length; i++){
+            field_options.push({id: res.fields[i].fieldId, name: res.fields[i].name});
+          }
+          e.setTraits([
+            "id",
+            "name",
+            {
+              type: "select",
+              label: "Field",
+              name: 'field',
+              options: field_options,
+            }
+          ]);    
+        });
+      } else{
+        e.setTraits([
+          "name",
+        ]);
       }
-    ]);
-    console.log(iterable);
+    }
   }
 });
 
 /* This triggers whenever the information of a component is updated */
 editor.on('component:update', function(e){ 
   /* The below statement prints the component */
-  //console.log(e)
+  /* Statement below ensures no infinite component update loop occurs */
+  if(prevent_endless_component_update_switch){
+    if(e.attributes["custom-name"] == "Iterator") {
 
-  /* This only triggers for row blocks */
-  if(e.attributes.type == 'row') {
-    /* This checks for if the value that was updated is the one it is looking for */
-    if(e.attributes.attributes != null && x3val != e.attributes.attributes.form_name) {
-      x3val = e.attributes.attributes.form_name;
-      let fieldOptions = null;
-      /* This updates the trait form. This is designed to simulate dynamically pickabble options.
-         For now the values are hardcoded, but later it should be dynamically updated from data in
-         the database. */
-      if(e.attributes.attributes.form_name == 'form1'){
-        fieldOptions = {
-          type: "select",
-          label: 'Field',
-          name: 'field_name',
-          options: [
-          {id: 'fielda', name: 'Field A'},
-          {id: 'fieldb', name: 'Field B'},
-          ]
-        };
-      } else if(e.attributes.attributes.form_name == 'form2'){
-        fieldOptions = {
-          type: "select",
-          label: 'Field',
-          name: 'field_name',
-          options: [
-          {id: 'field1', name: 'Field 1'},
-          {id: 'field2', name: 'Field 2'},
-          ]
-        };
-      }
-      if(fieldOptions == null) {
-        e.setTraits(["id",
-          "title",
-          "comp",
-          {
-            type: "select",
-            label: 'Form',
-            name: 'form_name',
-            options: [
-              {id: 'form1', name: 'Form 1'},
-              {id: 'form2', name: 'Form 2'},
-              {id: 'form3', name: 'Form 3'},
-            ],
-          },
-        ]);
-      } else {
-        e.setTraits(["id",
-        "title",
-        "comp",
-        {
-          type: "select",
-          label: 'Form',
-          name: 'form_name',
-          options: [
-            {id: 'form1', name: 'Form 1'},
-            {id: 'form2', name: 'Form 2'},
-            {id: 'form3', name: 'Form 3'},
-          ],
-        },
-        fieldOptions,
-        ]);  
-      }
+    } else if(e.attributes["custom-name"] == 'Button'){
+      modify_button_traits(e);
+    } else if(e.attributes["custom-name"] == 'Form'){
+      updateFormName(e.ccid, e.attributes.attributes.name);
+    } else if(e.attributes["custom-name"] == 'Text-Input'){
+      updateField(e.attributes.attributes.name);
+    } else if(e.attributes["custom-name"] == 'Iterable'){
+      const attributes = e.attributes.attributes; 
+      updateDisplay(e.ccid, attributes.name, parseInt(attributes.elements), attributes.navigateable, attributes.form);
     }
-  } else if(e.attributes["custom-name"] == 'Button'){
-    if(e.attributes.attributes != null && e.attributes.attributes.button_type != "form_submit"){
-
-    } else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "page_change"){
-
-    } else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "modify_field"){
-
-    }else if(e.attributes.attributes != null && e.attributes.attributes.button_type != "change_state"){
-
-    }else {
-      //There has been some problem with the field
-    }
-  } else if(e.attributes["custom-name"] == 'Form'){
-    let form = forms.find(function(form){
-      return form.id == e.cid;
-    });
-    form.name = e.attributes.attributes.name;
-  } else if(e.attributes["custom-name"] == 'Text-Input'){
-    //Replace with a single call to updateField and shift code to backend
-    if(e.parent().attributes['custom-name'] == 'Form'){
-      const parent = forms.find(function(form){
-        return form.id == e.parent().cid;        
-      });
-      if(parent != null){
-        
-        const input = parent.inputs.find(function(input){
-          return input.id == e.cid;
-        });
-        input.name = e.attributes.attributes.name;
-      }
-    }
+  } else{
+    prevent_endless_component_update_switch = true;
   }
 });
 
 editor.on('component:add', function(e){
+  //console.log(e.attributes["custom-name"]);
   if(e.attributes['custom-name'] == 'Form'){
-    const formStruct = {id: e.cid, name: '', inputs: []};
-    /*Use forms array temporarily, use addForm(e.cid) once database is implemented*/
-    forms.push(formStruct);
+    console.log("Adding form");
+    addForm(e.ccid, '');
 
-  }if(e.attributes['custom-name'] == 'Text-Input'){
+  }else if(e.attributes['custom-name'] == 'Text-Input'){
     //Currently only checks the parent. Should check recursive parents up to body
     if(e.parent().attributes['custom-name'] == 'Form'){
-      const parent = forms.find(function(form){
-        return form.id == e.parent().cid;        
-      });
-      if(parent != null){
-        parent.inputs.push({id: e.cid, name: ''});
-      }
+      addField(e.parent().ccid, '', e.ccid, 'form');
     }
+  } else if(e.attributes["custom-name"] == 'Iterable'){
+    addDisplay(e.ccid);
   }
 });
 
 editor.on('component:remove', function(e){
-  if(e.attributes['custom-name'] == 'Form' && forms.length > 0){
-    console.log(forms);
-    forms.splice(forms.indexOf(forms.find(function(form){
-      return form.id == e.cid;
-    })), 1);
-  } else if(e.attributes['custom-name'] == 'Text-Input' && forms.length > 0){
+  if(e.attributes['custom-name'] == 'Form'){
+    removeForm(e.ccid);
+  } else if(e.attributes['custom-name'] == 'Text-Input'){
     if(e.parent().attributes['custom-name'] == 'Form'){
-      const parent = forms.find(function(form){
-        return form.id == e.parent().cid;        
-      });
-      if(parent != null){
-        parent.inputs.splice(parent.inputs.indexOf(parent.inputs.find(function(input){
-          return input.id == e.cid;
-        })), 1);
-      }
+      removeField(e.parent().ccid, e.ccid, 'form');
     }
+  } else if(e.attributes["custom-name"] == 'Iterable'){
+    removeDisplay(e.ccid);
   }
 });
