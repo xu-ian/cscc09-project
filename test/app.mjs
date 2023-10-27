@@ -40,14 +40,14 @@ describe("Testing API", () => {
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
-        expect(res.text).to.equal("Invalid Inputs");
+        expect(res.text).to.equal("Malformed Input");
         chai.request(server)
           .post("/api/website/testweb/form/")
           .send(JSON.stringify({"name":"testform"}))
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.status).to.equal(422);
-            expect(res.text).to.equal("Invalid Inputs");
+            expect(res.text).to.equal("Malformed Input");
             done();
           });
       });
@@ -121,15 +121,20 @@ describe("Testing API", () => {
 
   it("it should modify the name of a form given a valid name and form id", function(done){
     chai.request(server)
-    .patch("/api/website/testweb/form/testid")
-    .set("content-type", "application/json")
-      .send(JSON.stringify({action: "name", "form": "testform2"}))
+      .patch("/api/website/testweb/form/testid")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({action: "self", name: "testform2"}))
       .end((err, res) => {
+        console.log(res.status);
+        console.log(res.body);
+        console.log(res.text);
+        expect(res.status).to.equal(200);
         chai.request(server)
           .get("/api/website/testweb/form/testid/")
           .end((err, res) =>{
             expect(err).to.be.null;
             expect(res.status).to.equal(200);
+            console.log(res.body);
             expect(res.body.name).to.equal("testform2");
             done();
           });
@@ -192,7 +197,7 @@ describe("Testing API", () => {
       });
   });
 
-  it("it should fail to add or remove a field if the body of the request is invalid", function(done){
+  it("it should fail to add or remove a field from the form if the body of the request is invalid", function(done){
     chai.request(server)
       .patch("/api/website/testweb/form/testid")
       .set("content-type", "application/json")
@@ -200,21 +205,21 @@ describe("Testing API", () => {
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
-        expect(res.text).to.equal("Invalid Inputs");
+        expect(res.text).to.equal("Malformed Inputs");
         chai.request(server)
           .patch("/api/website/testweb/form/testid")
           .send(JSON.stringify({action:"remove", fieldId: "testfieldId"}))
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.status).to.equal(422);
-            expect(res.text).to.equal("Invalid Inputs");
+            expect(res.text).to.equal("Malformed Inputs");
             chai.request(server)
               .patch("/api/website/testweb/form/testid")
               .send(JSON.stringify({action:"add", field: "testfield"}))
               .end((err, res) => {
                 expect(err).to.be.null;
                 expect(res.status).to.equal(422);
-                expect(res.text).to.equal("Invalid Inputs");
+                expect(res.text).to.equal("Malformed Inputs");
                 done();
               });
           });
@@ -249,8 +254,8 @@ describe("Testing API", () => {
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        expect(res.body.acknowledged).to.equal(true);
-        expect(res.body.deletedCount).to.equal(1);
+        expect(res.body.formId).to.equal("testid");
+        expect(res.body.webId).to.equal("testweb");
         done();
       });
   });
@@ -259,7 +264,7 @@ describe("Testing API", () => {
     chai.request(server)
       .post("/api/website/testweb/display/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({"id":"displayid", "name": "testdisplay"}))
+      .send(JSON.stringify({"displayid":"displayid", "name": "testdisplay"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
@@ -275,18 +280,18 @@ describe("Testing API", () => {
     chai.request(server)
       .post("/api/website/testweb/display/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({"id":"testid"}))
+      .send(JSON.stringify({"displayid":"testid"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
-        expect(res.text).to.equal("Invalid Inputs");
+        expect(res.text).to.equal("Malformed Inputs");
         chai.request(server)
           .post("/api/website/testweb/display/")
           .send(JSON.stringify({"name":"testform"}))
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.status).to.equal(422);
-            expect(res.text).to.equal("Invalid Inputs");
+            expect(res.text).to.equal("Malformed Inputs");
             done();
           });
       });
@@ -296,7 +301,7 @@ describe("Testing API", () => {
     chai.request(server)
       .post("/api/website/testweb/display/")
       .set("content-type", "application/json")
-      .send(JSON.stringify({id:"displayid", name:"testdisplay"}))
+      .send(JSON.stringify({displayid:"displayid", name:"testdisplay"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(409);
@@ -326,8 +331,6 @@ describe("Testing API", () => {
       .set("content-type", "application/json")
       .send(JSON.stringify({action:"add", field: "dataout", fieldId: "dataoutId"}))
       .end((err, res) =>{
-        console.log(res.body);
-        console.log(res.text);
         expect(err).to.be.null;
         expect(res.status).to.equal(409);
         expect(res.text).to.equal("Duplicate Entry");
@@ -339,8 +342,6 @@ describe("Testing API", () => {
     chai.request(server)
       .get("/api/website/testweb/display/displayid/")
       .end((err, res) =>{
-        console.log(res.body);
-        console.log(res.text);
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
         expect(res.body.displayId).to.equal('displayid');
@@ -355,10 +356,8 @@ describe("Testing API", () => {
     chai.request(server)
     .patch("/api/website/testweb/display/displayid")
     .set("content-type", "application/json")
-      .send(JSON.stringify({action: "self", "name": "testdisplay2", elements:3, navigateable:false}))
+      .send(JSON.stringify({action: "self", "name": "testdisplay2", form:'', elements:3, navigateable:false}))
       .end((err, res) => {
-        console.log(res.body);
-        console.log(res.text);
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
         expect(res.body.elements).to.equal(3);
@@ -424,7 +423,7 @@ describe("Testing API", () => {
       });
   });
 
-  it("it should fail to add or remove a field if the body of the request is invalid", function(done){
+  it("it should fail to add or remove a field from a display if the body of the request is invalid", function(done){
     chai.request(server)
       .patch("/api/website/testweb/display/displayid")
       .set("content-type", "application/json")
@@ -432,21 +431,21 @@ describe("Testing API", () => {
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(422);
-        expect(res.text).to.equal("Invalid Inputs");
+        expect(res.text).to.equal("Malformed Inputs");
         chai.request(server)
           .patch("/api/website/testweb/display/displayid")
           .send(JSON.stringify({action:"remove", fieldId: "dataoutId"}))
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res.status).to.equal(422);
-            expect(res.text).to.equal("Invalid Inputs");
+            expect(res.text).to.equal("Malformed Inputs");
             chai.request(server)
               .patch("/api/website/testweb/display/displayid")
               .send(JSON.stringify({action:"add", field: "dataout"}))
               .end((err, res) => {
                 expect(err).to.be.null;
                 expect(res.status).to.equal(422);
-                expect(res.text).to.equal("Invalid Inputs");
+                expect(res.text).to.equal("Malformed Inputs");
                 done();
               });
           });
@@ -492,8 +491,8 @@ describe("Testing API", () => {
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        expect(res.body.acknowledged).to.equal(true);
-        expect(res.body.deletedCount).to.equal(1);
+        expect(res.body.displayId).to.equal("displayid");
+        expect(res.body.webId).to.equal("testweb");
         done();
       });
   });
@@ -509,7 +508,6 @@ describe("Testing API", () => {
         expect(res.body.webId).to.equal("testweb");
         expect(res.body.name).to.equal("testfield3");
         expect(res.body.fieldId).to.equal("fieldId3");
-        console.log(res.body);
         done();
       });
   });
@@ -554,9 +552,8 @@ describe("Testing API", () => {
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        expect(res.body.acknowledged).to.equal(true);
-        expect(res.body.modifiedCount).to.equal(1);
-        expect(res.body.matchedCount).to.equal(1);
+        expect(res.body.fieldId).to.equal("fieldId3");
+        expect(res.body.name).to.equal("testfield4");
         done();
       });
   });
@@ -584,7 +581,6 @@ describe("Testing API", () => {
         expect(res.body.webId).to.equal("testweb");
         expect(res.body.name).to.equal("datatestfield3");
         expect(res.body.dataoutId).to.equal("datafieldId3");
-        console.log(res.body);
         done();
       });
   });
@@ -628,10 +624,10 @@ describe("Testing API", () => {
       .send(JSON.stringify({"name": "datatestfield4", "field": "fieldId3"}))
       .end((err, res) =>{
         expect(err).to.be.null;
+        console.log(res.body);
         expect(res.status).to.equal(200);
-        expect(res.body.acknowledged).to.equal(true);
-        expect(res.body.modifiedCount).to.equal(1);
-        expect(res.body.matchedCount).to.equal(1);
+        expect(res.body.name).to.equal("datatestfield4");
+        expect(res.body.field).to.not.be.undefined;
         done();
       });
   });
@@ -650,25 +646,80 @@ describe("Testing API", () => {
 
   it("it should delete the field given a valid field id", function(done){
     chai.request(server)
-    .delete("/api/website/testweb/datafield/datafieldId3")
-    .end((err, res) =>{
-      expect(err).to.be.null;
-      expect(res.status).to.equal(200);
-      expect(res.body.acknowledged).to.equal(true);
-      expect(res.body.deletedCount).to.equal(1);
-      done();
-    });
-  });
-
-  it("it should delete the field given a valid field id", function(done){
-    chai.request(server)
     .delete("/api/website/testweb/field/fieldId3")
     .end((err, res) =>{
       expect(err).to.be.null;
       expect(res.status).to.equal(200);
-      expect(res.body.acknowledged).to.equal(true);
-      expect(res.body.deletedCount).to.equal(1);
+      expect(res.body.webId).to.equal('testweb');
+      expect(res.body.name).to.equal('testfield4');
+      expect(res.body.fieldId).to.equal('fieldId3')
       done();
+    });
+  });
+
+  it("it should not delete a field if the field does not exist", function(done){
+    chai.request(server)
+      .delete("/api/website/testweb/field/invalidFieldName")
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        console.log(res.body);
+        expect(res.status).to.equal(404);
+        done();
+      });
+  });
+
+  it("it should not delete a field if the passed parameters are not alphanumeric", function(done){
+    chai.request(server)
+    .delete("/api/website/!@/field/invalidFieldName")
+    .end((err, res) =>{
+      expect(err).to.be.null;
+      expect(res.status).to.equal(422);
+      chai.request(server)
+        .delete("/api/website/testweb/field/!@")
+        .end((err, res) =>{
+          expect(err).to.be.null;
+          expect(res.status).to.equal(422);
+          done();
+        });
+    });
+});
+
+  it("it should delete the datafield given a valid data field id", function(done){
+    chai.request(server)
+    .delete("/api/website/testweb/datafield/datafieldId3")
+    .end((err, res) =>{
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.webId).to.equal('testweb');
+      expect(res.body.name).to.equal('datatestfield4');
+      expect(res.body.dataoutId).to.equal('datafieldId3')
+      done();
+    });
+  });
+
+  it("it should not delete the datafield if the datafield does not exist", function(done){
+    chai.request(server)
+      .delete("/api/website/testweb/datafield/invalidId")
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(404);
+        done();
+      });
+  });
+
+  it("it should not delete the datafield if the parameters are not alphanumeric", function(done){
+    chai.request(server)
+    .delete("/api/website/!@/datafield/invalidFieldName")
+    .end((err, res) =>{
+      expect(err).to.be.null;
+      expect(res.status).to.equal(422);
+      chai.request(server)
+        .delete("/api/website/testweb/datafield/!@")
+        .end((err, res) =>{
+          expect(err).to.be.null;
+          expect(res.status).to.equal(422);
+          done();
+        });
     });
   });
 });

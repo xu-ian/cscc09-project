@@ -1,5 +1,5 @@
-//import {default as axios} from '../../node_modules/axios/lib/axios'
 
+//Replace with fetch later
 function send(method, url, data, callback) {
   const xhr = new XMLHttpRequest();
   xhr.onload = function () {
@@ -82,7 +82,7 @@ export function getForm(id, callback, web="Default"){
 
 /* Updates the name of the form by id */
 export function updateFormName(id, name, web="Default"){
-  send("PATCH", "/api/website/"+web+"/form/"+id, {action: "name", "form": name,}, function(err, res){
+  send("PATCH", "/api/website/"+web+"/form/"+id, {action: "se;f", "name": name,}, function(err, res){
     if(err){
       console.error(err);
     } else {
@@ -130,7 +130,7 @@ export function removeForm(id, web="Default"){
 /* Adds a dynamic display that takes values that are submitted from a formId
    and displays the fields in the submitted form dynamically. */
 export function addDisplay(displayId, web="Default"){
-  send("POST", '/api/website/'+web+'/display/', {id: displayId, name: ""}, function(err, res){
+  send("POST", '/api/website/'+web+'/display/', {displayid: displayId, name: ""}, function(err, res){
     if(err){
       console.error(err);
     } else {
