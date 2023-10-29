@@ -22,6 +22,7 @@ app.use(express.static("static"));
 
 app.use("*/grapesjs", express.static("node_modules/grapesjs"));
 
+/* Change this later */
 app.use(cors());
 
 /* Mongoose connection */
@@ -41,6 +42,12 @@ app.use(function (req, res, next) {
 app.post("/", function (req, res, next) {
   res.json(req.body);
   next();
+});
+
+app.get("/stylesheet/:name", function(req, res, next){
+  const out = readFileSync('./static/style/main.css');
+  console.log(out);
+  return res.status(200).set({'Content-Type':'text/css'}).end(out);
 });
 
 /**************DATA CALLS**************/
