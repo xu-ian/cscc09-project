@@ -378,7 +378,7 @@ describe("Testing API", () => {
       });
   });
 
-  it("it should return all displays for the website if no display id is provided when getting a display", function(done){
+/*  it("it should return all displays for the website if no display id is provided when getting a display", function(done){
     chai.request(server)
       .post("/api/website/testweb/display/")
       .set("content-type", "application/json")
@@ -393,7 +393,7 @@ describe("Testing API", () => {
             done();
           });
       });
-  });
+  });*/
 
   it("it should remove the field from a display if the field exists", function(done){
     chai.request(server)

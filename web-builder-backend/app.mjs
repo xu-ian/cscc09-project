@@ -2,16 +2,17 @@ import { createServer, validateHeaderName } from "http";
 import { readFileSync, writeFile, writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import express from "express";
 import multer from "multer";
-import mongoose, { model } from "mongoose";
+import mongoose from "mongoose";
 import {Models} from "./schemas.mjs";
 import {Validators} from "./validators.mjs";
 import {validationResult} from 'express-validator';
 import session from 'express-session';
+import cors from 'cors';
 
 /* Upload path for files */
 const upload = multer({ dest: 'uploads/' });
 
-const PORT = 3000;
+const PORT = 5000;
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(express.json());
 app.use(express.static("static"));
 
 app.use("*/grapesjs", express.static("node_modules/grapesjs"));
+
+app.use(cors());
 
 /* Mongoose connection */
 await mongoose.connect('mongodb+srv://ianxu:Hm8o6o41fmfd92o6@cluster0.v2qo3wb.mongodb.net/?retryWrites=true&w=majority');

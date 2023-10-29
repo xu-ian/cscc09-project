@@ -13,7 +13,7 @@ export function getSelectForm(field_prefix){
   return {
     type: "select",
     label: field_prefix + 'Field',
-    name: toLowerCase(field_prefix) + '_field',
+    name: field_prefix.toLowerCase() + '_field',
     options: [
       //Set this to be filled out dynamically later
       {id: 'fieldId', name: "Field Name"},
