@@ -36,8 +36,10 @@ export function storeData(data, dom, web="Default"){
 }
 
 /* Get's the DOM for a website and loads it into grapesjs */
-export function loadData(callback, web="Default"){
-  send('GET', '/api/website/'+web+'/data/', null, callback);
+export function loadData(obj, callback, web="Default"){
+  send('GET', 'http://localhost:5000/api/website/'+web+'/data/', null, function(err, res){
+    callback(err, res, obj);
+  });
 }
 
 

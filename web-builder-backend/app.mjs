@@ -44,9 +44,9 @@ app.post("/", function (req, res, next) {
   next();
 });
 
+/* Stylesheet call for the grapesjs styles */
 app.get("/stylesheet/:name", function(req, res, next){
   const out = readFileSync('./static/style/main.css');
-  console.log(out);
   return res.status(200).set({'Content-Type':'text/css'}).end(out);
 });
 

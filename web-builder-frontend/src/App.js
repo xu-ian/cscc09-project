@@ -3,6 +3,7 @@ import './App.css';
 
 import Builder from './components/builder.js'
 import Credits from './components/credits.js'
+import Test from "./components/test.js"
 
 import {
   createBrowserRouter,
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
   {
     path:"/",
     element: <Builder />
+  },
+  {
+    path:"/test",
+    element: <Test />
   }
 ])
 
