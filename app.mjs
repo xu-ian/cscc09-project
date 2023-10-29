@@ -40,6 +40,50 @@ app.post("/", function (req, res, next) {
   next();
 });
 
+/**************DATA CALLS**************/
+
+/* This should only update the website, but because there is only one user 
+   that cannot create more websites, we add and update in this one call */
+
+/** Adds/Updates a website with data  */
+app.post("/api/website/:webid/data", validators.web, function(req, res, next){
+  const webid = req.params.webid;
+  const data = req.body.data;
+  const dom = req.body.dom;
+  if(validationResult(req).errors.length > 0) return res.status(422).end("Invalid Website");
+
+  models.web.findOneAndUpdate({webId: webid}, {data: data, dom: dom}, {new: true})
+                              .exec().then(function(website){
+    console.log(website);
+    if(website){
+      return res.status(200).json(website);//Website exists and has been updated
+    } else {//Create the website instead with the parameters
+      models.web.create({webId: webid, data: data, dom: dom}).then(function(website){
+
+        return res.status(200).json(website);
+
+      }).catch(function(err){return res.status(500).end(err)});
+    }
+  }).catch(function(err){return res.status(500).end(err)});
+});
+
+
+/** Gets the data of the website */
+app.get("/api/website/:webid/data", validators.web, function(req, res, next){
+  const webid = req.params.webid;
+  if(validationResult(req).errors.length > 0) return res.status(422).end("Invalid Website");
+  //Username here later when login is implemented
+
+  //Gets the website
+  models.web.findOne({webId: webid}, {data: 1, dom: 1}).exec().then(function(website){
+
+    if(website) return res.status(200).json(website); //Website has been found
+    else return res.status(404).end("Website not found") //Website not found
+
+  }).catch(function(err){return res.status(500).end(err)});
+});
+
+
 /**************FORM CALLS**************/
 
 /** Adds a form to the database */
@@ -161,6 +205,7 @@ app.patch("/api/website/:webid/form/:formid/", validators.form, function(req, re
   const nameErrors = totalErrors.find(function(err){
     return err.path == 'name';
   });
+  console.log(baseErrors);
   if(baseErrors){
     return res.status(422).end("Malformed Inputs");
   }
@@ -189,7 +234,7 @@ app.patch("/api/website/:webid/form/:formid/", validators.form, function(req, re
 
       });
     } else if(action == "self"){//Handles modifying status of form
-
+      console.log(nameErrors);
       //More input validation
       if(nameErrors) return res.status(422).end("Malformed Inputs");
   
@@ -572,7 +617,7 @@ app.delete("/api/website/:webid/datafield/:fieldid/", validators.dataout, functi
     else return res.status(404).end("Data field not found");//Data Field not found
     
   }).catch(function(err){return res.status(500).end(err)});
-  
+
 });
 
 

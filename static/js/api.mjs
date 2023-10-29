@@ -15,6 +15,8 @@ function send(method, url, data, callback) {
   }
 }
 
+/**********************FRAMEWORK***********************/
+
 /*********************DATA API*************************/
 
 /*
@@ -25,24 +27,16 @@ function send(method, url, data, callback) {
 */
 
 /* Stores the DOM structure created by grapesjs into the database to be referenced. */
-export function storeData(data, web="Default"){
-  axios.post('/api/website/'+web+'/data/',{
-    'data': data,
-  }).then((response) =>{
-    console.log(response);
-  }, (error) =>{
-    console.log(error);
+export function storeData(data, dom, web="Default"){
+  send('POST', '/api/website/'+web+"/data/", {data: data, dom: dom}, function(err, res){
+    if(err) console.log(err);
+    else console.log(res);
   });
 }
 
 /* Get's the DOM for a website and loads it into grapesjs */
-export function getData(web="Default"){
-  axios.get('/api/website/'+web+'/data/')
-  .then((response) =>{
-    console.log(response);
-  }, (error) =>{
-    console.log(error);
-  });
+export function loadData(callback, web="Default"){
+  send('GET', '/api/website/'+web+'/data/', null, callback);
 }
 
 
@@ -82,7 +76,7 @@ export function getForm(id, callback, web="Default"){
 
 /* Updates the name of the form by id */
 export function updateFormName(id, name, web="Default"){
-  send("PATCH", "/api/website/"+web+"/form/"+id, {action: "se;f", "name": name,}, function(err, res){
+  send("PATCH", "/api/website/"+web+"/form/"+id, {action: "self", "name": name,}, function(err, res){
     if(err){
       console.error(err);
     } else {
@@ -141,6 +135,12 @@ export function addDisplay(displayId, web="Default"){
 };
 
 export function updateDisplay(displayId, name, elements, navigateable, form, web="Default"){
+  if(!elements){
+    elements = 1;
+  }
+  if(!navigateable){
+    navigateable = false;
+  }
   send("PATCH", "/api/website/"+web+"/display/"+displayId,
   { name: name, elements: elements, navigateable: navigateable, form: form, action:"self"}, 
   function(err, res){
@@ -400,4 +400,27 @@ export function removeButton(buttonId, web="Default"){
   }, (error)=>{
     console.log(error);
   });
+};
+
+/**********************INSTANCE***********************/
+export function addFormInstance(inputs, formid, web="Default"){
+  send("POST", "/api/webiste/"+web+"/form/"+formid,
+  inputs, function(err, res){
+    if(err){
+      console.log(err);
+    } else {
+      console.log(res);
+    }
+  });
+};
+
+export function getFormInstance(formid, perpage, pagenumber, web="Default"){
+  send("GET", "/api/website/"+web+"/form"+formid+"?page="+pagenumber+"&perpage="+perpage,
+    null, function(err, res){
+      if(err){
+        console.log(err);
+      } else {
+        console.log(res);
+      }
+    });
 };

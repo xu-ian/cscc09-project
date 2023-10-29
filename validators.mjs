@@ -7,10 +7,11 @@ export class Validators {
   #Field = null;
   #Form = null;
   #Page = null;
+  #Web = null;
 
   constructor(){
     this.#Button = [
-      body('name', 'Invalid name').matches(/^[a-zA-Z0-9]*$/),//This regex matches alphanumeric without flagging empty
+      body('name', 'Invalid name').matches(/^[a-zA-Z0-9 ]*$/),//This regex matches alphanumeric without flagging empty
       body('name', 'Invalid name').isString(),//Combination with the above matches any alphanumeric string including empty string
       body('buttonid', 'Invalid Button Id').isAlphanumeric(),
       param('webid', 'Invalid Web Id').isAlphanumeric(),
@@ -20,7 +21,7 @@ export class Validators {
       param('fieldid', 'Invalid Data Field Id').isAlphanumeric(),
       body('fieldid', 'Invalid Data Field Id').isAlphanumeric(),
       body('name', 'Invalid name').isString(),
-      body('name', 'Invalid name').matches(/^[a-zA-Z0-9]*$/),
+      body('name', 'Invalid name').matches(/^[a-zA-Z0-9 ]*$/),
       body('field', 'Invalid name').isString(),
       body('field', 'Invalid Field Id').matches(/^[a-zA-Z0-9]*$/),
     ]
@@ -29,7 +30,7 @@ export class Validators {
       body('displayid', 'Invalid Display Id').isAlphanumeric(),
       param('displayid', 'Invalid Display Id').isAlphanumeric(),
       body('name', 'Not a string').isString(),
-      body('name', 'Invalid name').matches(/^[a-zA-Z0-9]*$/),
+      body('name', 'Invalid name').matches(/^[a-zA-Z0-9 ]*$/),
       body('elements', 'Not a number').isNumeric(),
       body('elements', 'Invalid number of elements').matches(/^[0-9]*$/),
       body('navigateable', 'Navigateable value must be true or false').isBoolean(),
@@ -39,7 +40,7 @@ export class Validators {
       body('form', 'Not a string').isString(),
       body('form', 'Invalid Form Id').matches(/^[a-zA-Z0-9]*$/),
       body('field', 'Not a string').isString(),
-      body('field', 'Invalid Data Field Name').matches(/^[a-zA-Z0-9]*$/),
+      body('field', 'Invalid Data Field Name').matches(/^[a-zA-Z0-9 ]*$/),
       body('fieldId', 'Not a string').isString(),
       body('fieldId', 'Invalid Data Field Id').matches(/^[a-zA-Z0-9]*$/),
     ];
@@ -48,16 +49,16 @@ export class Validators {
       param('fieldid').isAlphanumeric(),
       body('fieldid', 'Invalid Field Id').isAlphanumeric(),
       body('name', 'Invalid name').isString(),
-      body('name', 'Invalid name').matches(/^[a-zA-Z0-9]*$/),
+      body('name', 'Invalid name').matches(/^[a-zA-Z0-9 ]*$/),
     ];
     this.#Form = [
       param('webid', 'Invalid Web Id').isAlphanumeric(),
       param('formid', 'Invalid Form Id').isAlphanumeric(),
       body('formid', 'Invalid Form Id').isAlphanumeric(),
       body('name', 'Name is not a string').isString(),
-      body('name', 'Invalid name').matches(/^[a-zA-Z0-9]*$/),
+      body('name', 'Invalid name').matches(/^[a-zA-Z0-9 ]*$/),
       body('field', 'Field is not a string').isString(),
-      body('field', 'Invalid Field Name').matches(/^[a-zA-Z0-9]*$/),
+      body('field', 'Invalid Field Name').matches(/^[a-zA-Z0-9 ]*$/),
       body('fieldId', 'Field Id is not a string').isString(),
       body('fieldId', 'Invalid Field Id').matches(/^[a-zA-Z0-9]*$/),
       body('action', 'Invalid action').custom(function(action){
@@ -66,7 +67,10 @@ export class Validators {
     ];
     this.#Page = [
       //Fill this in later. I don't know the requirements yet
-    ]
+    ];
+    this.#Web = [
+      param('webid', 'Invalid Web Id').isAlphanumeric(),
+    ];
   }
 
   get button(){
@@ -91,5 +95,9 @@ export class Validators {
 
   get page(){
     return this.#Page;
+  }
+
+  get web(){
+    return this.#Web;
   }
 }

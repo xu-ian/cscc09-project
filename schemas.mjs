@@ -8,6 +8,8 @@ export class Models {
   #Field = null;
   #Form = null;
   #Page = null;
+  #User = null;
+  #Web = null;
 
   constructor(mongoose){
     //Declaring Schemas
@@ -62,6 +64,16 @@ export class Models {
       name: String,
       date: {type: Date, default: Date.now}
     });
+    const userSchema = new Schema({
+      username: String,
+      password: String, 
+    });
+    const webSchema = new Schema({
+      webId: String,
+      userId: {type: Schema.Types.ObjectId, ref: 'User'},
+      data: Map,
+      dom: String,
+    });
 
     //Declaring composite unique key for each schema
     buttonSchema.index({buttonId: 1, webId: 1}, {unique: true});
@@ -70,6 +82,8 @@ export class Models {
     fieldSchema.index({fieldId: 1, webId: 1}, {unique: true});
     formSchema.index({formId: 1, webId: 1}, {unique: true});
     pageSchema.index({pageId: 1, webId: 1}, {unique: true});
+    userSchema.index({username: 1}, {unique: true});
+    webSchema.index({webId: 1}, {unique: true});
 
     //Loading each schema into mongoose as a model
     this.#Button = mongoose.model('Button', buttonSchema);
@@ -78,6 +92,8 @@ export class Models {
     this.#Field = mongoose.model('Field', fieldSchema);
     this.#Form = mongoose.model('Form', formSchema);
     this.#Page = mongoose.model('Page', pageSchema);
+    this.#User = mongoose.model('User', userSchema);
+    this.#Web = mongoose.model('Web', webSchema);
   };
 
   get button(){
@@ -102,5 +118,13 @@ export class Models {
 
   get page(){
     return this.#Page;
+  }
+
+  get user(){
+    return this.#User;
+  }
+
+  get web(){
+    return this.#Web;
   }
 }

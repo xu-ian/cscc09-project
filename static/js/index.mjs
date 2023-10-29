@@ -2,10 +2,16 @@ import grapesjs from '../../node_modules/grapesjs/dist/grapes.mjs';
 import {getChoice, getSelectForm, getOperations, getDestination} from './helper.mjs';
 import {addForm, getForms, getForm, removeForm, updateFormName, addDisplay, removeDisplay, 
         updateDisplay, addDatafield, createDatafield, removeDatafield, updateDatafield, getDatafield, 
-        deleteDatafield, addField, createField, updateField, removeField, deleteField, 
-        addPage, removePage, getPages, getPage, addButton, getButton, removeButton} from './api.mjs'
+        deleteDatafield, addField, createField, updateField, removeField, deleteField, addPage, 
+        removePage, getPages, getPage, addButton, getButton, removeButton, storeData, loadData} from './api.mjs'
 
-const editor  = grapesjs.init({
+/* Odd quirk of Grapesjs is that the ccid of components remain fluid until it is updated.
+  After a component is modified, the ccid is constant. This means that newly added components do
+  not save their ccid across sessions. This makes consistency difficult. To solve this, add a buffer
+  where added components do not get their respective add component called on them, until they have 
+  their properties modified. This is a TODO item for later. */
+
+const editor = grapesjs.init({
   height: '100hv',
   container : '#gjs',
   fromElement: true,
@@ -14,6 +20,7 @@ const editor  = grapesjs.init({
     scripts: ["./js/index.mjs"],
     styles: ['../style/main.css'],    
   },
+  StorageManager: false,
   selectorManager: { componentFirst: true },
   styleManager: {
     sectors: [{/* These are the defaults I copied from the website and don't need to be changed for th emost part */
@@ -418,10 +425,22 @@ function modify_button_traits(e){
   e.setTraits(traits);
 }
 
+let loading = true;
+
 /* This triggers whenever a component is added/deleted or modified on the canvas */
 editor.on('storage:store', function(e){
+  console.log("Storing");
   /* The statement below prints the entire DOM in the canvas*/
   //console.log("Store:", e);
+});
+
+editor.on("storage:end:store", function(){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(editor.getHtml(), 'text/html');
+  const data = editor.getProjectData();
+  console.log(data);
+  console.log(doc.body.innerHTML, editor.getProjectData());
+  storeData({assets: data.assets, pages: data.pages, styles: data.styles}, doc.body.innerHTML);
 });
 
 /* This is how to set up a DOM Component. First argument is the type(type='row'), second argument is a JSON.
@@ -462,7 +481,8 @@ editor.Blocks.add('row', {
 /* This triggeres whenever a component is clicked on */
 editor.on('component:selected', function(e){
   /* This prints the selected component */
-  console.log(e);
+  console.log("Selected");
+  //console.log(e);
   if(e.attributes['custom-name'] == "Row") {
     console.log("Row");
     /* This is a function that can update the trait section of the grapesjs editor.
@@ -488,7 +508,6 @@ editor.on('component:selected', function(e){
       },]);
   } else if(e.attributes['custom-name'] == 'Form' || e.attributes['custom-name'] == 'Text-Input' ||
             e.attributes['custom-name'] == 'Iteration'){
-    console.log("Form/TextInput");
     e.setTraits([
       "name",
     ]);
@@ -564,6 +583,8 @@ editor.on('component:selected', function(e){
 
 /* This triggers whenever the information of a component is updated */
 editor.on('component:update', function(e){ 
+  console.log("Update");
+  //console.log(editor.getHtml());
   /* The below statement prints the component */
   /* Statement below ensures no infinite component update loop occurs */
   if(prevent_endless_component_update_switch){
@@ -607,6 +628,7 @@ editor.on('component:add', function(e){
 });
 
 editor.on('component:remove', function(e){
+  if(!loading){
   if(e.attributes['custom-name'] == 'Form'){
     removeForm(e.ccid);
   } else if(e.attributes['custom-name'] == 'Text-Input'){
@@ -618,4 +640,12 @@ editor.on('component:remove', function(e){
   } else if(e.attributes["custom-name"] == 'Data-Out'){
     removeDatafield(e.parent().parent().ccid, '', e.ccid);
   }
+  }
+});
+
+loadData(function(err, res){
+  if(res){
+    editor.loadProjectData(res.data);    
+  }
+  loading = false;
 });
