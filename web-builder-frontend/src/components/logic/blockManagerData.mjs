@@ -100,8 +100,8 @@ const blockManagerData = [
                 L 20 8 A 1 1 0 0 0 21 7 L 21 4 A 1 1 0 0 0 20 3 Z"/>
             </svg>`,
     content: `
-    <div class="row generic-background" data-gjs-draggable="true" data-gjs-custom-name="Iterable">
-      <div class="generic-iterable-background iteration" data-gjs-droppable=".output" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
+    <div class="row generic-background iterout" data-gjs-draggable="true" data-gjs-custom-name="Iterable">
+      <div class="generic-iterable-background iteration iteroutable" data-gjs-droppable=".output" data-gjs-draggable="true" data-gjs-custom-name="Iteration"></div>
     </div>
     `
 

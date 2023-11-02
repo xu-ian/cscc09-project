@@ -1,29 +1,43 @@
 import React, {setState} from "react"
 import {loadData} from './logic/api.mjs'
+import Row from './row.js'
+import Form from './form.js'
+import Iterative from "./iterative.js"
 
 class Test extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      dom: ""
+      dom: "",
+      obj:<div></div>
     };
   }
 
   componentDidMount(){
-    console.log("This", this);
     loadData(this, function(err, res, out){
-      console.log("Out", out);
+      const div = document.createElement('div');
+      div.innerHTML = res.dom;
+      const objlist = [];
+      for(let i = 0; i < div.childNodes.length; i++){
+        if(div.childNodes[i].className.search("form") != -1){
+          objlist.push(<Form key={i} dom={div.childNodes[i]} innerhtml = {div.childNodes[i].innerHTML}/>);
+        } else if(div.childNodes[i].className.search("iterout") != -1){
+          objlist.push(<Iterative key={i} dom={div.childNodes[i]} innerhtml = {div.childNodes[i].innerHTML}/>);
+        }
+      };
+      out.setState({obj: objlist});
+
       if(err){
         console.log(err);
       } else {
-        console.log(res.dom);
         out.setState({dom: res.dom});
       }
     });
   }
 
   render(){
-    return (<div><div dangerouslySetInnerHTML={{__html : this.state.dom}}></div>
+    return (<div>
+      {this.state.obj}
       <a href="credits">credits</a>
       <a href="/">build</a>
     </div>);

@@ -7,6 +7,7 @@ export class Models {
   #Display = null;
   #Field = null;
   #Form = null;
+  #Forms = null;
   #Page = null;
   #User = null;
   #Web = null;
@@ -58,6 +59,12 @@ export class Models {
       fields: [{type: Schema.Types.ObjectId, ref: 'Field'}],
       date: {type: Date, default: Date.now},
     });
+    const formIterationSchema = new Schema({
+      webId: String,
+      formId: String,
+      fields: Map,
+      date: {type: Date, default: Date.now},
+    });
     const pageSchema = new Schema({
       pageId: String,
       webId: String,
@@ -91,6 +98,7 @@ export class Models {
     this.#Display = mongoose.model('Display', displaySchema);
     this.#Field = mongoose.model('Field', fieldSchema);
     this.#Form = mongoose.model('Form', formSchema);
+    this.#Forms = mongoose.model('FormIteration', formIterationSchema);
     this.#Page = mongoose.model('Page', pageSchema);
     this.#User = mongoose.model('User', userSchema);
     this.#Web = mongoose.model('Web', webSchema);
@@ -115,6 +123,10 @@ export class Models {
   get form(){
     return this.#Form;
   };
+
+  get forms(){
+    return this.#Forms;
+  }
 
   get page(){
     return this.#Page;

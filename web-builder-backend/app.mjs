@@ -2,7 +2,7 @@ import { createServer, validateHeaderName } from "http";
 import { readFileSync, writeFile, writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import express from "express";
 import multer from "multer";
-import mongoose from "mongoose";
+import mongoose, { model } from "mongoose";
 import {Models} from "./schemas.mjs";
 import {Validators} from "./validators.mjs";
 import {validationResult} from 'express-validator';
@@ -279,6 +279,70 @@ app.patch("/api/website/:webid/form/:formid/", validators.form, function(req, re
         }
       }).catch(function(err){return res.status(500).end(err)});
     }
+  }).catch(function(err){return res.status(500).end(err)});
+});
+
+/* Adds a form instance for a form */
+app.post("/api/website/:webid/form/:formid/forms", function(req, res, next){
+  const webId = req.params.webid;
+  const formId = req.params.formid;
+
+  //Validate stuff
+  //Authenticate stuff
+  models.form.findOne({webId: webId, formId: formId}).then(function(form){
+    
+    if(!form) return res.status(404).end("Form not found");
+
+    models.forms.create({webId: webId, formId: formId, fields: req.body}).then(function(result){
+
+      console.log(result);
+      return res.status(200).json(result);
+
+    }).catch(function(err){return res.status(500).end(err)});
+
+  }).catch(function(err){return res.status(500).end(err)});
+});
+
+app.get("/api/website/:webid/form/:formid/forms/:formiterid?", function(req, res, next){
+  const webId = req.params.webid;
+  const formId = req.params.formid;
+  const formiterId = req.params.formiterid;
+  const start = req.query.start;
+  const end = req.query.end;
+
+  //Input Sanitization
+  //Authentication
+
+  if(formiterId){//Form Iteration is passed
+
+    models.forms.findOne({webId: webId, formId: formId, _id: formiterId}).exec().then(function(formIteration){
+ 
+      if(!formIteration) return res.status(404).end("Form not found");
+ 
+      return res.status(200).json(formIteration);
+      
+    }).catch(function(err){ return res.status(500).end(err)});
+  } else {//Form Iteration is not passed
+    models.forms.find({webId: webId, formId: formId}).sort({date: 1}).skip(start).limit(end).exec().then(function(formIterations){
+
+      return res.status(200).json(formIterations);
+
+    }).catch(function(err){ return res.status(500).end(err) });
+  }
+});
+
+app.delete("/api/website/:webid/form/:formid/forms/:formiterid", function(req, res, next){
+  const webId = req.params.webid;
+  const formId = req.params.formid;
+  const formiterId = req.params.formiterid;
+
+  //Input Sanitiziation
+  //Authentication
+
+  models.forms.findOneAndDelete({webId: webId, formId: formId, _id: formiterId}).exec().then(function(formiter){
+
+    return res.status(200).json(formiter);
+
   }).catch(function(err){return res.status(500).end(err)});
 });
 

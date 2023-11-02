@@ -7,8 +7,7 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 /* Global variable to keep track of new ids, so they can be deleted when finished. */
-let imageId = null;
-let commentId = null;
+let testformId = null;
 
 describe("Testing API", () => {
   after(function () {
@@ -16,6 +15,7 @@ describe("Testing API", () => {
     closeMongoDB();
   });
 
+  /* Form test cases */
   it("it should add an form successfully", function (done) {
     chai.request(server)
       .post("/api/website/testweb/form/")
@@ -248,6 +248,74 @@ describe("Testing API", () => {
       });
   });
 
+  /* Form iteration test case */
+  it("it should create a form itertion given a valid form id and webid", function(done){
+    chai.request(server)
+      .post("/api/website/testweb/form/testid/forms")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({"field1":"value1", "field2": "value2"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        testformId = res.body._id;
+        expect(res.body != null).to.equal(true);
+        chai.request(server)
+          .post("/api/website/testweb/form/testid/forms")
+          .set("content-type", "application/json")
+          .send(JSON.stringify({"field1":"value1", "field2": "value2"}))
+          .end((err, res) => {        
+            chai.request(server)
+              .post("/api/website/testweb/form/testid/forms")
+              .set("content-type", "application/json")
+              .send(JSON.stringify({"field1":"value1", "field2": "value2"}))
+              .end((err, res) => {        
+                chai.request(server)
+                  .post("/api/website/testweb/form/testid/forms")
+                  .set("content-type", "application/json")
+                  .send(JSON.stringify({"field1":"value1", "field2": "value2"}))
+                  .end((err, res) => {        
+                    done();
+                  });
+              });
+          });
+      });
+  });
+
+  it("it should get a form iteration given a valid form iteration id", function(done){
+    chai.request(server)
+      .get("/api/website/testweb/form/testid/forms/"+ testformId)
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        console.log(res.body);
+        expect(res.body._id).to.equal(testformId);
+        done();
+      });
+  });
+
+  it("it should get multiple form iterations given a valid form template id and a start and end", function(done){
+    chai.request(server)
+      .get("/api/website/testweb/form/testid/forms?start=1&end=2")
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.length).to.equal(2);
+        done();
+      });
+  });
+
+  it("it should delete a form iteration given a valid iteration id", function(done){
+    chai.request(server)
+      .delete("/api/website/testweb/form/testid/forms/"+testformId)
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        console.log(res.body);
+        done();
+      });
+  });
+
+  /* Form test case final */
   it("it should delete a form given a valid form id", function(done){
     chai.request(server)
       .delete("/api/website/testweb/form/testid")
@@ -260,6 +328,7 @@ describe("Testing API", () => {
       });
   });
 
+  /* Display test cases */
   it("it should add an display successfully", function (done) {
     chai.request(server)
       .post("/api/website/testweb/display/")
@@ -497,6 +566,8 @@ describe("Testing API", () => {
       });
   });
 
+  /* Field test cases */
+
   it("it should add a field to the database", function(done){
     chai.request(server)
       .post("/api/website/testweb/field/")
@@ -569,6 +640,8 @@ describe("Testing API", () => {
         done();
       });
   });
+
+  /* Data field test cases */
 
   it("it should add a datafield to the database", function(done){
     chai.request(server)

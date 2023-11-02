@@ -104,7 +104,7 @@ export function getForms(callback, web="Default"){
 
 /* Removes a form from the database */
 export function removeForm(id, web="Default"){
-  send("DELETE", '/api/website/'+web+'/form/' + id, null, function(err, res){
+  send("DELETE", 'http://localhost:5000/api/website/'+web+'/form/' + id, null, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -113,6 +113,37 @@ export function removeForm(id, web="Default"){
   });
 };
 
+
+/** Adds a form iteration to the database */
+export function addFormIteration(formid, fields, web="Default"){
+  send("POST", 'http://localhost:5000/api/website/'+web+'/form/'+formid+"/forms", fields, function(err, res){
+    if(err){
+      console.log(err);
+    } else {
+      console.log(res);
+    }
+  });
+};
+
+export function getFormIteration(formid, formIterId, web="Default"){
+  send("GET", 'http://localhost:5000/api/website/'+web+'/form/'+formid+'/forms/'+formIterId, null, function(err, res){
+    if(err){
+      console.log(err);
+    } else {
+      console.log(res);
+    }
+  });
+}
+
+export function getFormIterationPage(extr, formid, page, epp, callback, web="Default"){
+  send("GET", 'http://localhost:5000/api/website/'+web+'/form/'+formid+'/forms?start='+page+"&end="+epp, null, function(err, res){
+    if(err){
+      console.log(err);
+    } else {
+      callback(extr, res);
+    }
+  });
+}
 
 /*********************DISPLAY API*************************/
 
