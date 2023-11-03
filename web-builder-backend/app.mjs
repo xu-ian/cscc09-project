@@ -1,6 +1,7 @@
 import { createServer, validateHeaderName } from "http";
 import { readFileSync, writeFile, writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import express from "express";
+import {Server as SocketIOServer} from 'socket.io';
 import multer from "multer";
 import mongoose, { model } from "mongoose";
 import {Models} from "./schemas.mjs";
@@ -15,6 +16,8 @@ const upload = multer({ dest: 'uploads/' });
 const PORT = 5000;
 
 const app = express();
+
+let io = null;
 
 app.use(express.json());
 
@@ -694,8 +697,17 @@ app.delete("/api/website/:webid/datafield/:fieldid/", validators.dataout, functi
 
 });
 
+const createdserver = createServer(app)
 
-export const server = createServer(app).listen(PORT, function (err) {
+io = new SocketIOServer(createdserver, {cors: {origin: '*'}});
+
+io.on("connection", (socket) => {
+  console.log("Socket connected");
+  io.emit("FromAPI", "Hello World!");
+});
+
+
+export const server = createdserver.listen(PORT, function (err) {
   if (err) console.log(err);
   else console.log("HTTP server on http://localhost:%s", PORT);
 });
