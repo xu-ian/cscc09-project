@@ -65,7 +65,24 @@ body{
   transition: background-color 0.3s ease-in-out;
 }
 
+.mousecursor {
+  position: absolute;
+  background-repeat:no-repeat;
+  background-size:contain;
+  background-image: url("./testpic.png");
+  z-index: 1;
+  width:100px;
+  height:100px;
+}
 
+.mousecursorid{
+  position: relative;
+  opacity: 0;
+}
+
+.mousecursorid:hover{
+  opacity: 100;
+}
 
 .button:hover {
   color: white;

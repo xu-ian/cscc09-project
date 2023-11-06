@@ -12,16 +12,33 @@ import './styles/main.css'
 
 import { setupEditor } from "./logic/editorLogic.mjs";
 
+let x = 0;
+let y = 0;
+
 function Builder() {
   
   let streamOut = useRef(null);
+  let [mousePositions, setMousePositions] = useState(null);
 
   const onEditor = (editor) => {
     console.log('Editor loaded', { editor });
     setupEditor(editor);
   };
 
+  const updateMousePositions = (id, positions) => {
+    let mousePositions = [];
+    for(const [key , entry] of Object.entries(positions)){
+      if(key != id){
+        mousePositions.push(<div key={key} class="mousecursor" style={{left: entry.x, top: entry.y}}>
+          <div class="mousecursorid">{key}</div></div>)
+      }
+    }
+    setMousePositions(mousePositions);
+  };
+
+  /* useEffect with [] only activates once */
   useEffect(() =>{
+    console.log("triggers");
     navigator.getUserMedia({video: true, audio: true}, function(stream) {
       console.log(streamOut);
       if(!streamOut.current) return;
@@ -30,10 +47,19 @@ function Builder() {
       streamOut.current.autoplay = true;
     }, err => { console.warn(err.message)});
     const socket = socketIOClient("127.0.0.1:5000");
-    socket.on('FromAPI', function(data){
-      console.log(data);
+    socket.on('Acknowledge', function(){
+      //Sends mouse position to backend every second
+      setInterval(function(){socket.emit("mousePosition", {x:x, y:y})}, 100);
+    });
+    socket.on("mousePositions", function(data){
+      updateMousePositions(socket.id, data);
+    });
+    document.addEventListener("mousemove", function(event){
+      x = event.pageX;
+      y = event.pageY;
     });
   }, []);
+  
 
   return (
     <div>    
@@ -66,6 +92,7 @@ function Builder() {
         <a class="centered" href="test">test</a>
         <video ref={streamOut} width="300px" height="300px" class="local-video" id="local-video"></video>
       </div>
+      {mousePositions}
     </div>
   )
 }

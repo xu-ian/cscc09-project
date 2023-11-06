@@ -19,6 +19,10 @@ const app = express();
 
 let io = null;
 
+let sockets = {};
+
+let socketval = [];
+
 app.use(express.json());
 
 app.use(express.static("static"));
@@ -702,8 +706,28 @@ const createdserver = createServer(app)
 io = new SocketIOServer(createdserver, {cors: {origin: '*'}});
 
 io.on("connection", (socket) => {
-  console.log("Socket connected");
-  io.emit("FromAPI", "Hello World!");
+  console.log("Socket connected: ", socket.id);
+  sockets[socket.id] = {x: 0, y:0};
+  socketval.push(socket);
+  
+  socket.on("mousePosition", (position) =>{
+    sockets[socket.id] = position;
+    //console.log(sockets);
+  });
+  socket.on("disconnect", function(){
+    socketval.splice(socketval.indexOf(socket), 1);
+    delete sockets[socket.id];
+    //console.log(socket.id);
+  });
+
+  socketval.forEach(function(socket){
+    console.log(socket.id);
+  });
+
+  socket.emit("Acknowledge", sockets);
+  setInterval(function(){
+    socket.emit("mousePositions", sockets);
+  }, 100);
 });
 
 
