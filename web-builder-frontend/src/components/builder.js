@@ -10,6 +10,8 @@ import blockManagerData from "./logic/blockManagerData.mjs";
 import 'grapesjs/dist/css/grapes.min.css'
 import './styles/main.css'
 
+import PagesSidebar from './PagesSidebar'
+
 import { setupEditor } from "./logic/editorLogic.mjs";
 
 let x = 0;
@@ -62,31 +64,34 @@ function Builder() {
   
 
   return (
-    <div>    
-      <GjsEditor
-        grapesjs={grapesjs}
-        grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
-        options={{
-          height:'490pt',
-          container : '#gjs',
-          fromElement: true,
-          showOffsets: true,
-          canvas: {
-            styles: ['http://localhost:5000/stylesheet/main'],    
-          },
-          //StorageManager: false,
-          selectorManager: { componentFirst: true },
-          styleManager: {
-            sectors: styleManagerData
-          },
-          blockManager: { /* These are blocks in the editor and the general format they are created in */
+    <div>
+      <div class='row'>
+        <PagesSidebar />    
+        <GjsEditor
+          grapesjs={grapesjs}
+          grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
+          options={{
+            height:'490pt',
+            container : '#gjs',
+            fromElement: true,
+            showOffsets: true,
+            canvas: {
+              styles: ['http://localhost:5000/stylesheet/main'],    
+            },
+            //StorageManager: false,
+            selectorManager: { componentFirst: true },
+            styleManager: {
+              sectors: styleManagerData
+            },
+            blockManager: { /* These are blocks in the editor and the general format they are created in */
             blocks: blockManagerData,
           },
         }}
         onEditor={onEditor}
-      >
+        >
 
-      </GjsEditor>
+        </GjsEditor>
+      </div>
       <div class="row" style={{'min-height':'10px'}}>
         <a class="centered" href="credits">credits</a>
         <a class="centered" href="test">test</a>

@@ -10,7 +10,6 @@ body{
   justify-content: flex-start;
   align-items: stretch;
   flex-wrap: nowrap;
-  padding: 10px;
   min-height: 75px;
 }
 .row-cell {
@@ -87,4 +86,132 @@ body{
 .button:hover {
   color: white;
   background-color: blue;
+}
+
+.container-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.container-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.sidebar-container {
+  width: 200px;
+  justify-content: flex-start;
+  padding: 10px;
+  background-color: #444;
+}
+
+.page-container {
+  width: 90%;
+  justify-content: space-between;
+  margin: 5px;
+  background-color: #afafaf;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.page-container-selected {
+  width: 90%;
+  justify-content: space-between;
+  margin: 5px;
+  background-color: #efefef;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.add-page-btn {
+  margin: 5px 5px 15px 5px;
+  width: 90%;
+  height: 35px;
+  border-radius: 20px;
+  border: 1px solid black;
+  cursor: pointer;
+  background-color: #ddd;
+  font-weight: 700;
+  &:hover{
+    filter: brightness(70%);
+  }
+}
+
+.add-page-modal {
+  display: none;
+  position: absolute; 
+  z-index: 99;
+  padding-top: 100px;
+  left: 50;
+  top: 50;
+  width: 98.8vw; 
+  height: 95vh; 
+  overflow: auto; 
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.add-page-modal-open {
+  display: block;
+}
+
+.add-page-modal-closed {
+  display: none;
+}
+
+.add-page-modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 390px;
+}
+
+.add-page-form {
+  width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.add-page-form label {
+  font-size: 20px;
+  margin: 0 0 10px 0;
+}
+
+.add-page-form input {
+  width: 90%;
+  height: 25px;
+  font-size: 16px;
+}
+
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.delete-icon {
+  width: 20px;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 5px;
+  &:hover {
+    background-color: #b8303053;
+
+  }
 }
