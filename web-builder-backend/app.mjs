@@ -708,23 +708,70 @@ io = new SocketIOServer(createdserver, {cors: {origin: '*'}});
 io.on("connection", (socket) => {
   console.log("Socket connected: ", socket.id);
   sockets[socket.id] = {x: 0, y:0};
+  socketval.forEach(function(sock){
+    sock.emit("newConnection", {sock: socket.id});
+  });
+
   socketval.push(socket);
-  
+
   socket.on("mousePosition", (position) =>{
     sockets[socket.id] = position;
-    //console.log(sockets);
   });
   socket.on("disconnect", function(){
     socketval.splice(socketval.indexOf(socket), 1);
     delete sockets[socket.id];
-    //console.log(socket.id);
+    socketval.forEach(function(sock){
+      sock.emit("connectionLoss", {sock: socket.id});
+    });
   });
 
-  socketval.forEach(function(socket){
-    console.log(socket.id);
+
+  socket.on("SendAudioLink", function(data){
+    const dstsocket = socketval.find(function(sock){
+        return sock.id == data.to;
+    });
+
+    if(dstsocket){
+      data.to = socket.id;
+      dstsocket.emit("ReceiveAudioLink", data);  
+    }else {
+      console.log(data.to, "does not exist");
+    }
   });
 
-  socket.emit("Acknowledge", sockets);
+  socket.on("SendAudioAnswer", function(data){
+    //console.log("Sending Audio Answer");
+    const dstsocket = socketval.find(function(sock){
+      return sock.id == data.to;
+        
+    });
+
+    if(dstsocket){
+      data.to = socket.id;
+      dstsocket.emit("ReceiveAudioAnswer", data);
+    }else {
+      console.log(data.to, "does not exist");
+    }
+  });
+
+  socket.on("SendIceCandidate", function(data){
+    //console.log("Sending Ice Candidate");
+    const dstsocket = socketval.find(function(sock){
+      return sock.id == data.to;
+    });
+
+    if(dstsocket){
+      data.to = socket.id;
+      dstsocket.emit("ReceiveIceCandidate", data);
+    } else {
+      console.log(data.to, "does not exist");
+    }
+  });
+
+  socket.emit("Acknowledge", Object.keys(sockets).filter(function(sock){
+    return sock != socket.id;
+  }));
+
   setInterval(function(){
     socket.emit("mousePositions", sockets);
   }, 100);

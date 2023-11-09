@@ -69,10 +69,10 @@ body{
   position: absolute;
   background-repeat:no-repeat;
   background-size:contain;
-  background-image: url("./testpic.png");
+  background-image: url("./custom-cursor.png");
   z-index: 1;
-  width:100px;
-  height:100px;
+  width:10px;
+  height:10px;
 }
 
 .mousecursorid{
