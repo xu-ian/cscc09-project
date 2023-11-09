@@ -1,9 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
 
 import Builder from './components/builder.js'
 import Credits from './components/credits.js'
 import Test from "./components/test.js"
+import Login from "./pages/Login"
+import Signup from "./pages/Signup"
+import Dashboard from "./pages/Dashboard"
 
 import {
   createBrowserRouter,
@@ -22,6 +24,18 @@ const router = createBrowserRouter([
   {
     path:"/test",
     element: <Test />
+  },
+  {
+    path:"/login",
+    element: <Login />
+  },
+  {
+    path:"/signup",
+    element: <Signup />
+  },
+  {
+    path:"/dashboard",
+    element: <Dashboard />
   }
 ])
 

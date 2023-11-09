@@ -10,6 +10,8 @@ import blockManagerData from "./logic/blockManagerData.mjs";
 import 'grapesjs/dist/css/grapes.min.css'
 import './styles/main.css'
 
+import PagesSidebar from './PagesSidebar'
+
 import { setupEditor } from "./logic/editorLogic.mjs";
 
 let x = 0;
@@ -36,8 +38,6 @@ function Builder() {
     const connection = connections.find(function(connection){
       return connection[sockid] != null;
     });
-    //console.log(connections, sockid);
-
     if(connection) return connection[sockid].connection;
 
     return connection;
@@ -69,8 +69,6 @@ function Builder() {
     setMousePositions(mousePositions);
   };
 
-
-
   const createPeerConnection = function(srcsocket, dstsocket){
 
     /* Return the existing connection if it already exists */
@@ -79,8 +77,7 @@ function Builder() {
 
     /* Set the connection to set value when a track is added */
     peerConnection.ontrack = function({streams: [stream]}){
-      console.log(peerConnection.getSenders());
-      console.log("Remote connection established", stream);
+      //console.log("Remote connection established", stream);
       videos.push({src: stream, dst: dstsocket});
       let medias = []
       videos.forEach(function(video){
@@ -101,7 +98,6 @@ function Builder() {
     /* When a peer connection generates an ICE Candidate, send it to the destination socket */
     peerConnection.onicecandidate = function(event){
       if(event.candidate){
-        console.log("Generated ice candidate", event.candidate);
         srcsocket.emit("SendIceCandidate", {'ice-candidate': event.candidate, to: dstsocket});
       }
     };
@@ -109,14 +105,12 @@ function Builder() {
     let connection = {};
     connection[dstsocket] = {connection: peerConnection, connected: false};
     connections.push(connection);
-    //console.log(connections);
     return peerConnection;
   }
 
   /** Opens a WebRTC Connection between the source socket and a destination socket */
   const callUser = async function(srcsocket, dstsocket){
-    //console.log(dstsocket);
-    console.log("Attempting to create a connection between", srcsocket.id, dstsocket);
+    //console.log("Attempting to create a connection between", srcsocket.id, dstsocket);
     const peerConnection = createPeerConnection(srcsocket, dstsocket);
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
@@ -126,8 +120,6 @@ function Builder() {
 
   /* useEffect with [] only activates once */
   useEffect(() =>{
-    console.log("triggers");
-
     /* Sockets */
     const socket = socketIOClient("127.0.0.1:5000");
 
@@ -172,7 +164,6 @@ function Builder() {
     });
 
     socket.on('Acknowledge', function(sockets){
-      console.log(sockets);
       navigator.getUserMedia({video: true, audio: false}, function(stream) {
         
         sockets.forEach(async function(dstsocket){
@@ -190,7 +181,7 @@ function Builder() {
     });
 
     socket.on("ReceiveAudioLink", async data =>{
-      console.log(socket.id, " has received a link from ", data.to);
+      //console.log(socket.id, " has received a link from ", data.to);
       const peerConnection = getConnectionBySockId(data.to);
       if(peerConnection){
         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
@@ -206,7 +197,7 @@ function Builder() {
     });
 
     socket.on("ReceiveAudioAnswer", async data =>{
-      console.log(socket.id, " has received an answer from ", data.to);
+      //console.log(socket.id, " has received an answer from ", data.to);
       await getConnectionBySockId(data.to).setRemoteDescription(new RTCSessionDescription(data.answer));
       if(!getConnectedBySockId(data.to)){
         await callUser(socket, data.to);
@@ -215,8 +206,6 @@ function Builder() {
     });
 
     socket.on("ReceiveIceCandidate", async function(data){
-      console.log(socket.id, " is receiving ice from ", data.to);
-
       if(data['ice-candidate']){
         await getConnectionBySockId(data.to).addIceCandidate(data['ice-candidate']);
       }
@@ -241,31 +230,32 @@ function Builder() {
   }, [medias]);
 
   return (
-    <div>    
-      <GjsEditor
-        grapesjs={grapesjs}
-        grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
-        options={{
-          height:'490pt',
-          container : '#gjs',
-          fromElement: true,
-          showOffsets: true,
-          canvas: {
-            styles: ['http://localhost:5000/stylesheet/main'],    
-          },
-          //StorageManager: false,
-          selectorManager: { componentFirst: true },
-          styleManager: {
-            sectors: styleManagerData
-          },
-          blockManager: { /* These are blocks in the editor and the general format they are created in */
+    <div>
+      <div class='row'>
+        <PagesSidebar />    
+        <GjsEditor
+          grapesjs={grapesjs}
+          grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
+          options={{
+            height:'490pt',
+            container : '#gjs',
+            fromElement: true,
+            showOffsets: true,
+            canvas: {
+              styles: ['http://localhost:5000/stylesheet/main'],    
+            },
+            //StorageManager: false,
+            selectorManager: { componentFirst: true },
+            styleManager: {
+              sectors: styleManagerData
+            },
+            blockManager: { /* These are blocks in the editor and the general format they are created in */
             blocks: blockManagerData,
           },
         }}
-        onEditor={onEditor}
-      >
-
+        onEditor={onEditor}>
       </GjsEditor>
+      </div>
       <div className="row" style={{minHeight:'10px'}}>
         <a className="centered" href="credits">credits</a>
         <a className="centered" href="test">test</a>
