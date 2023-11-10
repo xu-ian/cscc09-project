@@ -27,10 +27,12 @@ function Builder() {
   let streamOut = useRef(null);
   let [mousePositions, setMousePositions] = useState(null);
   let [medias, setMedias] = useState(null);
+  const [gpjsEditor, setGpjsEditor] = useState(null);
 
   const onEditor = (editor) => {
     console.log('Editor loaded', { editor });
     setupEditor(editor);
+    setGpjsEditor(editor)
   };
 
   /** Returns the connection associated with the socket */
@@ -231,8 +233,8 @@ function Builder() {
 
   return (
     <div>
-      <div class='row'>
-        <PagesSidebar />    
+      <div className='row'>
+        <PagesSidebar editor={gpjsEditor}/>    
         <GjsEditor
           grapesjs={grapesjs}
           grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
@@ -251,6 +253,9 @@ function Builder() {
             },
             blockManager: { /* These are blocks in the editor and the general format they are created in */
             blocks: blockManagerData,
+            pageManager: {
+              pages: []
+            }
           },
         }}
         onEditor={onEditor}>
