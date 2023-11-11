@@ -3,6 +3,8 @@ import socketIOClient from 'socket.io-client';
 import { useEffect, forceUpdate, useState, useRef } from "react";
 import grapesjs, { Editor } from 'grapesjs';
 import GjsEditor, { Canvas } from '@grapesjs/react';
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from '../firebase'
 
 import styleManagerData from './logic/styleManagerData.mjs'
 import blockManagerData from "./logic/blockManagerData.mjs";
@@ -23,7 +25,7 @@ let idacc = 0;
 const { RTCPeerConnection, RTCSessionDescription } = window;
 
 function Builder() {
-  
+  const [user, loading, error] = useAuthState(auth);
   let streamOut = useRef(null);
   let [mousePositions, setMousePositions] = useState(null);
   let [medias, setMedias] = useState(null);
@@ -31,8 +33,10 @@ function Builder() {
 
   const onEditor = (editor) => {
     console.log('Editor loaded', { editor });
+    console.log('user', user)
     setupEditor(editor);
     setGpjsEditor(editor)
+
   };
 
   /** Returns the connection associated with the socket */
