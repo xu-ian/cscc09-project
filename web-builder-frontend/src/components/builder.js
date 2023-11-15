@@ -127,7 +127,8 @@ function Builder() {
   /* useEffect with [] only activates once */
   useEffect(() =>{
     /* Sockets */
-    const socket = socketIOClient("127.0.0.1:5000");
+    const socket = socketIOClient("ws://localhost:5000");
+    //const socket = socketIOClient("ws://34.130.196.52:8080");
 
     socket.on("mousePositions", function(data){
       updateMousePositions(socket.id, data);
@@ -152,7 +153,13 @@ function Builder() {
     });
 
     socket.on("connectionLoss", function(sock){
-      delete videos[videos.findIndex((video) => {return video.dst == sock.sock})];
+      
+      delete videos[videos.findIndex((video) => {
+        if(video){
+          return video.dst == sock.sock
+        }
+        return false
+      })];
       let medias = [];
       videos.forEach(function(video){
         medias.push(<video key={video.dst} ref={
@@ -248,6 +255,7 @@ function Builder() {
             fromElement: true,
             showOffsets: true,
             canvas: {
+              //styles: ['http://34.130.196.52:8080/stylesheet/main'],    
               styles: ['http://localhost:5000/stylesheet/main'],    
             },
             //StorageManager: false,
