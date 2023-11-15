@@ -30,7 +30,7 @@ const blockManagerData = [
                        L 2 2 L 22 2 L 22 22 L 2 22 L 2 1 Z"/>
             </svg>`,
     content: `<div class="row row-cell" data-gjs-droppable="true" 
-               data-gjs-draggable="true" data-gjs-custom-name="Row"">
+               data-gjs-draggable="true" data-gjs-custom-name="Row">
               </div>`
   },
   {/* Data Field */
