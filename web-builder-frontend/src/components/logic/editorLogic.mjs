@@ -195,6 +195,8 @@ editor.on('component:update', function(e){
       updateDisplay(e.ccid, attributes.name, parseInt(attributes.elements), attributes.navigateable, attributes.form);
     } else if(e.attributes["custom-name"] == 'Data-Out'){
       updateDatafield(e.ccid, attributes.name, attributes.field);
+    } else if(e.attributes["custom-name"] == 'Button'){
+      //updateButton(e.ccid, attributes.name, attributes.page);
     }
   } else{
     prevent_endless_component_update_switch = true;
@@ -218,6 +220,8 @@ editor.on('component:add', function(e){
     if(e.parent().attributes['custom-name'] == 'Iteration'){
       addDatafield(e.parent().parent().ccid, '', e.ccid);
     }
+  } else if(e.attributes["custom-name"] == 'Button'){
+    addButton(e.ccid, '');
   }
 });
 

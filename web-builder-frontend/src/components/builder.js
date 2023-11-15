@@ -127,8 +127,8 @@ function Builder() {
   /* useEffect with [] only activates once */
   useEffect(() =>{
     /* Sockets */
-    const socket = socketIOClient("ws://localhost:5000");
-    //const socket = socketIOClient("ws://34.130.196.52:8080");
+    //const socket = socketIOClient("ws://localhost:5000");
+    const socket = socketIOClient("ws://"+process.env.REACT_WEB_SERVER);
 
     socket.on("mousePositions", function(data){
       updateMousePositions(socket.id, data);
@@ -239,6 +239,7 @@ function Builder() {
   }, []);
 
   useEffect(()=>{
+    console.log(process.env);
     console.log("Updates");
   }, [medias]);
 
@@ -255,8 +256,8 @@ function Builder() {
             fromElement: true,
             showOffsets: true,
             canvas: {
-              //styles: ['http://34.130.196.52:8080/stylesheet/main'],    
-              styles: ['http://localhost:5000/stylesheet/main'],    
+              styles: [process.env.REACT_WEB_SERVER+'/stylesheet/main'],    
+              //styles: ['http://localhost:5000/stylesheet/main'],    
             },
             //StorageManager: false,
             selectorManager: { componentFirst: true },

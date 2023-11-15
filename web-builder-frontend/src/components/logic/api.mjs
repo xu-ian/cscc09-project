@@ -16,6 +16,9 @@ function send(method, url, data, callback) {
   }
 }
 
+const host = process.env.REACT_WEB_SERVER
+//const host = "http://localhost:5000"
+
 /**********************FRAMEWORK***********************/
 
 /*********************DATA API*************************/
@@ -29,7 +32,7 @@ function send(method, url, data, callback) {
 
 /* Stores the DOM structure created by grapesjs into the database to be referenced. */
 export function storeData(data, dom, web="Default"){
-  send('POST', 'http://localhost:5000/api/website/'+web+"/data/", {data: data, dom: dom}, function(err, res){
+  send('POST', host + '/api/website/'+web+"/data/", {data: data, dom: dom}, function(err, res){
     if(err) console.log(err);
     else console.log(res);
   });
@@ -37,7 +40,7 @@ export function storeData(data, dom, web="Default"){
 
 /* Get's the DOM for a website and loads it into grapesjs */
 export function loadData(obj, callback, web="Default"){
-  send('GET', 'http://localhost:5000/api/website/'+web+'/data/', null, function(err, res){
+  send('GET', host + '/api/website/'+web+'/data/', null, function(err, res){
     callback(err, res, obj);
   });
 }
@@ -55,7 +58,7 @@ export function loadData(obj, callback, web="Default"){
 /** This function adds the provided id, name, and website id as a form */
 export function addForm(id, name, web="Default"){
   console.log("Adding form");
-  send('POST', 'http://localhost:5000/api/website/'+web+'/form/', {'id': id, 'name': name,}, function(err, res){
+  send('POST', host + '/api/website/'+web+'/form/', {'id': id, 'name': name,}, function(err, res){
     if(err) {
       console.log(err);
     } else {
@@ -67,7 +70,7 @@ export function addForm(id, name, web="Default"){
 /** Gets a form from the database by id */
 export function getForm(id, callback, web="Default"){
   //axios get the id
-  send("GET", 'http://localhost:5000/api/website/'+web+'/form/' + id, null, function(err, res){
+  send("GET", host + '/api/website/'+web+'/form/' + id, null, function(err, res){
     if(err){
       console.log(err);
     } else{
@@ -79,7 +82,7 @@ export function getForm(id, callback, web="Default"){
 
 /* Updates the name of the form by id */
 export function updateFormName(id, name, web="Default"){
-  send("PATCH", "http://localhost:5000/api/website/"+web+"/form/"+id, {action: "self", "name": name,}, function(err, res){
+  send("PATCH", host + "/api/website/"+web+"/form/"+id, {action: "self", "name": name,}, function(err, res){
     if(err){
       console.error(err);
     } else {
@@ -92,7 +95,7 @@ export function updateFormName(id, name, web="Default"){
    forms in a website */
 /** Gets all forms for the webpage */
 export function getForms(callback, web="Default"){
-  send("GET", 'http://localhost:5000/api/website/'+web+'/form/', null, function(err, res){
+  send("GET", host + '/api/website/'+web+'/form/', null, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -104,7 +107,7 @@ export function getForms(callback, web="Default"){
 
 /* Removes a form from the database */
 export function removeForm(id, web="Default"){
-  send("DELETE", 'http://localhost:5000/api/website/'+web+'/form/' + id, null, function(err, res){
+  send("DELETE", host + '/api/website/'+web+'/form/' + id, null, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -116,7 +119,7 @@ export function removeForm(id, web="Default"){
 
 /** Adds a form iteration to the database */
 export function addFormIteration(formid, fields, web="Default"){
-  send("POST", 'http://localhost:5000/api/website/'+web+'/form/'+formid+"/forms", fields, function(err, res){
+  send("POST", host + '/api/website/'+web+'/form/'+formid+"/forms", fields, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -126,7 +129,7 @@ export function addFormIteration(formid, fields, web="Default"){
 };
 
 export function getFormIteration(formid, formIterId, web="Default"){
-  send("GET", 'http://localhost:5000/api/website/'+web+'/form/'+formid+'/forms/'+formIterId, null, function(err, res){
+  send("GET", host + '/api/website/'+web+'/form/'+formid+'/forms/'+formIterId, null, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -136,7 +139,7 @@ export function getFormIteration(formid, formIterId, web="Default"){
 }
 
 export function getFormIterationPage(extr, formid, page, epp, callback, web="Default"){
-  send("GET", 'http://localhost:5000/api/website/'+web+'/form/'+formid+'/forms?start='+page+"&end="+epp, null, function(err, res){
+  send("GET", host + '/api/website/'+web+'/form/'+formid+'/forms?start='+page+"&end="+epp, null, function(err, res){
     if(err){
       console.log(err);
     } else {
@@ -158,7 +161,7 @@ export function getFormIterationPage(extr, formid, page, epp, callback, web="Def
 /* Adds a dynamic display that takes values that are submitted from a formId
    and displays the fields in the submitted form dynamically. */
 export function addDisplay(displayId, web="Default"){
-  send("POST", 'http://localhost:5000/api/website/'+web+'/display/', {displayid: displayId, name: ""}, function(err, res){
+  send("POST", host + '/api/website/'+web+'/display/', {displayid: displayId, name: ""}, function(err, res){
     if(err){
       console.error(err);
     } else {
@@ -175,7 +178,7 @@ export function updateDisplay(displayId, name, elements, navigateable, form, web
   if(!navigateable){
     navigateable = false;
   }
-  send("PATCH", "http://localhost:5000/api/website/"+web+"/display/"+displayId,
+  send("PATCH", host + "/api/website/"+web+"/display/"+displayId,
   { name: name, elements: elements, navigateable: navigateable, form: form, action:"self"}, 
   function(err, res){
     if(err){
@@ -188,7 +191,7 @@ export function updateDisplay(displayId, name, elements, navigateable, form, web
 
 /* Removes a dynamic display from the database */
 export function removeDisplay(displayId, web="Default"){
-  send("DELETE", "http://localhost:5000/api/website/"+web+"/display/"+displayId, null, 
+  send("DELETE", host + "/api/website/"+web+"/display/"+displayId, null, 
   function(err, res){
     if(err){
       console.error(err);
@@ -208,7 +211,7 @@ export function removeDisplay(displayId, web="Default"){
  */
 
 export function addDatafield(displayId, df, dfId, web="Default"){
-  send("PATCH", "http://localhost:5000/api/website/"+web+"/display/"+displayId,
+  send("PATCH", host + "/api/website/"+web+"/display/"+displayId,
   {action: "add", field: df, fieldId: dfId},
   function(err, res){
     if(err){
@@ -221,7 +224,7 @@ export function addDatafield(displayId, df, dfId, web="Default"){
 
 /* Creates a new datafield not attached to display */
 export function createDatafield(dfId, web="Default"){
-  send("POST", "http://localhost:5000/api/website/"+web+"/datafield/", 
+  send("POST", host + "/api/website/"+web+"/datafield/", 
   {datafieldid: dfId, name:""},
   function(err, res){
     if(err){
@@ -246,7 +249,7 @@ export function getDatafield(dfId, web="Default"){
 
 /** Updates a datafield's name or data source */
 export function updateDatafield(dfId, df, field, web="Default"){
-  send("PATCH", "http://localhost:5000/api/website/"+web+"/datafield/"+dfId,
+  send("PATCH", host + "/api/website/"+web+"/datafield/"+dfId,
   {name: df, field: field},
   function(err, res){
     if(err){
@@ -259,7 +262,7 @@ export function updateDatafield(dfId, df, field, web="Default"){
 
 /** Removes an datafield attached to a display by id */
 export function removeDatafield(displayId, dfId, web="Default"){
-  send("PATCH", "http://localhost:5000/api/website/"+web+"/display/"+displayId,
+  send("PATCH", host + "/api/website/"+web+"/display/"+displayId,
   {action: "remove", fieldid: dfId},
   function(err, res){
     if(err){
@@ -272,7 +275,7 @@ export function removeDatafield(displayId, dfId, web="Default"){
 
 /* Removes a datafield not attached to display by id */
 export function deleteDatafield(dfId, web="Default"){
-  send('DELETE', 'http://localhost:5000/api/website/'+web+'/datafield/'+dfId, null,
+  send('DELETE', host + '/api/website/'+web+'/datafield/'+dfId, null,
   function(err, res){
     if(err){
       console.error(err);
@@ -287,7 +290,7 @@ export function deleteDatafield(dfId, web="Default"){
 /* Adds a field to the form/display/anything else 
    type = 'display' or 'form' or nothing else yet. */
 export function addField(formId, field, fieldId, web="Default"){
-  send("PATCH", 'http://localhost:5000/api/website/'+web+'/form/'+formId, {
+  send("PATCH", host + '/api/website/'+web+'/form/'+formId, {
     action: "add",
     field: field, /* Does not have to be unique */
     fieldId: fieldId, /* Has to be unique */
@@ -307,7 +310,7 @@ export function createField(fieldId, name, web="Default"){
 
 /** Updates the name of a field by id */
 export function updateField(fieldId, field, web="Default"){
-  send("PATCH", 'http://localhost:5000/api/website/'+web+"/field/"+fieldId, 
+  send("PATCH", host + '/api/website/'+web+"/field/"+fieldId, 
        {name: field}, function(err, res){
     if(err){
       console.log(err);
@@ -320,7 +323,7 @@ export function updateField(fieldId, field, web="Default"){
 /* Removes a field from the form/display/anything else
    type = 'display' or 'form' or nothing else yet */
 export function removeField(formId, fieldId, web="Default"){
-  send("PATCH", 'http://localhost:5000/api/website/'+web+'/form/'+formId, {
+  send("PATCH", host + '/api/website/'+web+'/form/'+formId, {
     "action": "remove",
     "fieldId": fieldId,
   },function(err, res){
@@ -402,7 +405,7 @@ export function removePage(pageId, web="Default"){
    - form_submit: sourceId should be the formId
    - page_change: sourceId should be the pageId 
    - data_aggregate: sourceId should be [[source IDs], Destination ID]*/
-export function addButton(buttonId, functionality, sourceId=null, web="Default"){
+export function addButton(buttonId, name, web="Default"){
   /*axios.post('api/website/'+web+'/button/', {
     'id': buttonId,
     'function': functionality,
@@ -438,7 +441,7 @@ export function removeButton(buttonId, web="Default"){
 
 /**********************INSTANCE***********************/
 export function addFormInstance(inputs, formid, web="Default"){
-  send("POST", "http://localhost:5000/api/webiste/"+web+"/form/"+formid,
+  send("POST", host + "/api/webiste/"+web+"/form/"+formid,
   inputs, function(err, res){
     if(err){
       console.log(err);
@@ -449,7 +452,7 @@ export function addFormInstance(inputs, formid, web="Default"){
 };
 
 export function getFormInstance(formid, perpage, pagenumber, web="Default"){
-  send("GET", "http://localhost:5000/api/website/"+web+"/form"+formid+"?page="+pagenumber+"&perpage="+perpage,
+  send("GET", host + "/api/website/"+web+"/form"+formid+"?page="+pagenumber+"&perpage="+perpage,
     null, function(err, res){
       if(err){
         console.log(err);
