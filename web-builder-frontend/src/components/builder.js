@@ -21,7 +21,7 @@ let y = 0;
 
 let connections = [];
 let videos = [];
-let idacc = 0;
+
 const { RTCPeerConnection, RTCSessionDescription } = window;
 
 function Builder() {
@@ -75,6 +75,28 @@ function Builder() {
     setMousePositions(mousePositions);
   };
 
+  const toggleAudio = function(video){
+    video.audio = !video.audio;
+    displayMedia();
+  };
+
+  const displayMedia = function(){
+    let medias = []
+    videos.forEach(function(video){
+      medias.push(<video key={video.dst} ref={
+        (el) => {
+          if(el != null){
+            console.log(video);
+            el.srcObject = video.src;
+            el.muted = !video.audio;
+            el.autoplay = true;
+          }
+        }
+      } width="50px" height="50px" className="remote-video" id={video.dst} onClick={() => {toggleAudio(video)}}></video>);
+    });
+    setMedias(medias);
+  }
+
   const createPeerConnection = function(srcsocket, dstsocket){
 
     /* Return the existing connection if it already exists */
@@ -84,21 +106,20 @@ function Builder() {
     /* Set the connection to set value when a track is added */
     peerConnection.ontrack = function({streams: [stream]}){
       //console.log("Remote connection established", stream);
-      videos.push({src: stream, dst: dstsocket});
-      let medias = []
-      videos.forEach(function(video){
-        medias.push(<video key={video.dst} ref={
-          (el) => { 
-            console.log(el);
-            if(el != null){
-              el.srcObject = video.src;
-              el.muted = true;
-              el.autoplay = true;
-            }
-          }
-        } width="300px" height="300px" className="remote-video" id={video.dst}></video>);
+      const video = videos.find(function(video){
+        if(video){
+          return video.dst == dstsocket;
+        }
+        return false;
       });
-      setMedias(medias);
+      console.log(stream.getTracks());
+      if(video){
+
+        video.src = stream;
+      } else{
+        videos.push({src: stream, dst: dstsocket, video: true, audio: true});
+      }
+      displayMedia();
     };
       
     /* When a peer connection generates an ICE Candidate, send it to the destination socket */
@@ -128,7 +149,7 @@ function Builder() {
   useEffect(() =>{
     /* Sockets */
     //const socket = socketIOClient("ws://localhost:5000");
-    const socket = socketIOClient("ws://"+process.env.REACT_WEB_SERVER);
+    const socket = socketIOClient("ws://"+process.env.REACT_APP_SERVER);
 
     socket.on("mousePositions", function(data){
       updateMousePositions(socket.id, data);
@@ -142,7 +163,7 @@ function Builder() {
     */
 
     socket.on("newConnection", function(sock){
-      navigator.getUserMedia({video: true, audio: false}, async function(stream){
+      navigator.getUserMedia({video: true, audio: true}, async function(stream){
         console.log(getConnectionBySockId(sock.sock));
         await callUser(socket, sock.sock);
 
@@ -154,30 +175,17 @@ function Builder() {
 
     socket.on("connectionLoss", function(sock){
       
-      delete videos[videos.findIndex((video) => {
+      videos.splice(videos.findIndex((video) => {
         if(video){
           return video.dst == sock.sock
         }
         return false
-      })];
-      let medias = [];
-      videos.forEach(function(video){
-        medias.push(<video key={video.dst} ref={
-          (el) => { 
-            console.log(el);
-            if(el != null){
-              el.srcObject = video.src;
-              el.muted = true;
-              el.autoplay = true;
-            }
-          }
-        } width="300px" height="300px" className="remote-video" id={video.dst}></video>);
-      });
-      setMedias(medias);
+      }), 1);
+      displayMedia();
     });
 
     socket.on('Acknowledge', function(sockets){
-      navigator.getUserMedia({video: true, audio: false}, function(stream) {
+      navigator.getUserMedia({video: true, audio: true}, function(stream) {
         
         sockets.forEach(async function(dstsocket){
           await callUser(socket, dstsocket);
@@ -232,16 +240,12 @@ function Builder() {
       streamOut.current.autoplay = true;
     }, err => { console.warn(err.message)});
 
-    document.addEventListener("mousemove", function(event){
+    document.getElementById("root").addEventListener("mousemove", function(event){
       x = event.pageX;
       y = event.pageY;
     });
   }, []);
 
-  useEffect(()=>{
-    console.log(process.env);
-    console.log("Updates");
-  }, [medias]);
 
   return (
     <div>
@@ -256,7 +260,7 @@ function Builder() {
             fromElement: true,
             showOffsets: true,
             canvas: {
-              styles: [process.env.REACT_WEB_SERVER+'/stylesheet/main'],    
+              styles: ["http://"+process.env.REACT_APP_SERVER+'/stylesheet/main'],    
               //styles: ['http://localhost:5000/stylesheet/main'],    
             },
             //StorageManager: false,
@@ -265,22 +269,23 @@ function Builder() {
               sectors: styleManagerData
             },
             blockManager: { /* These are blocks in the editor and the general format they are created in */
-            blocks: blockManagerData,
-            pageManager: {
-              pages: []
-            }
-          },
-        }}
-        onEditor={onEditor}>
-      </GjsEditor>
+              blocks: blockManagerData,
+              pageManager: {
+                pages: []
+              }
+            },
+          }}
+          onEditor={onEditor}>
+        </GjsEditor>
       </div>
+      {medias}
       <div className="row" style={{minHeight:'10px'}}>
         <a className="centered" href="credits">credits</a>
         <a className="centered" href="test">test</a>
       </div>
       <div>
-        <video ref={streamOut} width="300px" height="300px" className="local-video" id="local-video"></video>
-        {medias}
+        {//<video ref={streamOut} width="300px" height="300px" className="local-video" id="local-video"></video>
+        }
       </div>
       {mousePositions}
     </div>
