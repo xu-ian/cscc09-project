@@ -274,6 +274,7 @@ function Builder() {
                 pages: []
               }
             },
+            storageManager: false,
           }}
           onEditor={onEditor}>
         </GjsEditor>
