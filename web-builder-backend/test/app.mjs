@@ -8,11 +8,95 @@ chai.use(chaiHttp);
 
 /* Global variable to keep track of new ids, so they can be deleted when finished. */
 let testformId = null;
+let testwebId = null;
 
 describe("Testing API", () => {
   after(function () {
     server.close();
     closeMongoDB();
+  });
+
+  /* Website test cases */
+  it("it should add a website successfully", function(done){
+    chai.request(server)
+      .post("/api/website/")
+      .send("")
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        testwebId = res.body.webId;
+        done();
+      });
+  });
+
+  it("it should add a user to a website successfully", function(done){
+    chai.request(server)
+      .patch("/api/website/"+testwebId+"/user")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({action:"add", user:"TestUser1"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.modifiedCount).to.equal(1);
+        chai.request(server)
+          .patch("/api/website/"+testwebId+"/user")
+          .set("content-type", "application/json")
+          .send(JSON.stringify({action:"add", user:"TestUser2"}))
+          .end((err, res) => {
+            done();
+          });
+      });
+  });
+
+  it("it should not add a duplicate user to a website", function(done){
+    chai.request(server)
+      .patch("/api/website/"+testwebId+"/user")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({action:"add", user:"TestUser1"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(409);
+        done();
+      });
+  });
+
+  it("it should remove a user from a website successfully", function(done){
+    chai.request(server)
+    .patch("/api/website/"+testwebId+"/user")
+    .set("content-type", "application/json")
+    .send(JSON.stringify({action:"remove", user:"TestUser1"}))
+    .end((err, res) => {
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.modifiedCount).to.equal(1);
+      done();
+    });
+  });
+
+  it("it should not remove a user from a website that does not exist", function(done){
+    chai.request(server)
+    .patch("/api/website/"+testwebId+"/user")
+    .set("content-type", "application/json")
+    .send(JSON.stringify({action:"remove", user:"TestUser3"}))
+    .end((err, res) => {
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.modifiedCount).to.equal(1);
+      done();
+    });
+  });
+
+  it("it should delete a website if it has no users", function(done){
+    chai.request(server)
+    .patch("/api/website/"+testwebId+"/user")
+    .set("content-type", "application/json")
+    .send(JSON.stringify({action:"remove", user:"TestUser2"}))
+    .end((err, res) => {
+      expect(err).to.be.null;
+      expect(res.status).to.equal(200);
+      expect(res.body.modifiedCount).to.equal(1);
+      done();
+    });
   });
 
   /* Form test cases */
@@ -125,16 +209,12 @@ describe("Testing API", () => {
       .set("content-type", "application/json")
       .send(JSON.stringify({action: "self", name: "testform2"}))
       .end((err, res) => {
-        console.log(res.status);
-        console.log(res.body);
-        console.log(res.text);
         expect(res.status).to.equal(200);
         chai.request(server)
           .get("/api/website/testweb/form/testid/")
           .end((err, res) =>{
             expect(err).to.be.null;
             expect(res.status).to.equal(200);
-            console.log(res.body);
             expect(res.body.name).to.equal("testform2");
             done();
           });
@@ -287,7 +367,6 @@ describe("Testing API", () => {
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        console.log(res.body);
         expect(res.body._id).to.equal(testformId);
         done();
       });
@@ -310,7 +389,6 @@ describe("Testing API", () => {
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        console.log(res.body);
         done();
       });
   });
@@ -697,7 +775,6 @@ describe("Testing API", () => {
       .send(JSON.stringify({"name": "datatestfield4", "field": "fieldId3"}))
       .end((err, res) =>{
         expect(err).to.be.null;
-        console.log(res.body);
         expect(res.status).to.equal(200);
         expect(res.body.name).to.equal("datatestfield4");
         expect(res.body.field).to.not.be.undefined;
@@ -735,7 +812,6 @@ describe("Testing API", () => {
       .delete("/api/website/testweb/field/invalidFieldName")
       .end((err, res) =>{
         expect(err).to.be.null;
-        console.log(res.body);
         expect(res.status).to.equal(404);
         done();
       });

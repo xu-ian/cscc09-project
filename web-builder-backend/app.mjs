@@ -30,6 +30,22 @@ let sockets = {};
 
 let socketval = [];
 
+
+/* Helper Functions */
+
+const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+/** Generates a random string of length */
+const generateString = function(length) {
+  let result = '';
+  const charactersLength = characters.length;
+  for ( let i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}
+
 app.use(express.json());
 
 app.use(express.static("static"));
@@ -107,6 +123,70 @@ app.get("/api/website/:webid/data", validators.web, function(req, res, next){
   }).catch(function(err){return res.status(500).end(err)});
 });
 
+/************WEBSITE CALLS*************/
+
+/** Adds a new website */
+app.post("/api/website", function(req, res, next){
+
+  /* Make this check the firebase db later */
+  const logged_in = true;
+
+  /* Set this to the id of the currently logged in user */
+  const userid = "Default";
+  
+  /* Check if logged in */
+  if(logged_in){
+    const web = {webId:generateString(32), userId:[userid], data: {assets:[], pages: [], styles:[]}, dom: {}};
+    models.web.create(web).then(function(web){
+      return res.status(200).send(web);
+    }).catch(function(err){
+
+      if(err.code == 11000) return res.status(409).end("Duplicate Entry");
+      else return res.status(500).send(err);
+
+    });
+  } else {
+    return res.status(401).send("Not logged in");
+  }
+});
+
+/** Updates the website by adding or removing a user */
+app.patch("/api/website/:webid/user/", function(req, res, next){
+    const webId = req.params.webid;
+    const action = req.body.action;
+    const user = req.body.user;
+    /* Make this check the firebase db later */
+    const logged_in = true;
+    if(!logged_in) return res.status(401).end("Not Signed In");
+
+    /* Set this to the id of the currently logged in user */
+    const userid = "Default";
+
+    models.web.findOne({webId:webId}).exec().then(function(web){
+
+      const users = web.userId;
+      if(users.includes(userid)){//Permitted to modify
+        if(action == "add"){//Adds a new user to the website
+          if(users.includes(user)){return res.status(409).end("Duplicate Entry");}
+          users.push(user);
+          models.web.updateOne({webId:webId}, {userId:users}).exec().then(function(web){
+            return res.status(200).send(web);
+          }).catch(function(err){return res.status(500).end(err)});          
+        } else if(action == "remove"){//Removes a user from the website
+          users.splice(users.indexOf(user), 1);
+          models.web.updateOne({webId:webId}, {userId:users}).exec().then(function(web){
+            //If this is the last user, then delete the website as well
+            if(users.length == 0){models.web.findOneAndDelete({webId: webId}).exec();}
+            return res.status(200).send(web);
+          }).catch(function(err){return res.status(500).end(err)});
+        
+        } else {//Errors on unknown action
+          return res.status(422).end("Invalid action");
+        }
+      } else {return res.status(401).end("Forbidden");}//Not permitted to modify
+
+    }).catch(function(err){console.log(err); return res.status(404).end("Website not found")});
+});
 
 /**************FORM CALLS**************/
 
@@ -229,7 +309,7 @@ app.patch("/api/website/:webid/form/:formid/", validators.form, function(req, re
   const nameErrors = totalErrors.find(function(err){
     return err.path == 'name';
   });
-  console.log(baseErrors);
+  //console.log(baseErrors);
   if(baseErrors){
     return res.status(422).end("Malformed Inputs");
   }
@@ -309,7 +389,7 @@ app.post("/api/website/:webid/form/:formid/forms", function(req, res, next){
 
     models.forms.create({webId: webId, formId: formId, fields: req.body}).then(function(result){
 
-      console.log(result);
+      //console.log(result);
       return res.status(200).json(result);
 
     }).catch(function(err){return res.status(500).end(err)});

@@ -77,7 +77,7 @@ export class Models {
     });
     const webSchema = new Schema({
       webId: String,
-      userId: {type: Schema.Types.ObjectId, ref: 'User'},
+      userId: [String],
       data: Map,
       dom: Map,
     });
