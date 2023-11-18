@@ -3,10 +3,10 @@ body{
 }
 #gjs {
   width:85%;
-  height:97vh;
+  height:85vh;
 }
 .row {
-  display: flex;
+  display: block;
   justify-content: flex-start;
   align-items: stretch;
   flex-wrap: nowrap;
@@ -18,9 +18,13 @@ body{
   padding: 5px;
 }
 
+.flex {
+  display: flex;
+}
+
 .generic-background {
   padding:5px;
-  width:100%;
+  width:auto;
   border: 1px solid black;
   border-radius: 10px;
   background-color: #e5d2d2;
@@ -29,7 +33,7 @@ body{
 .generic-iterable-background {
   padding:5px;
   margin:10px;
-  width:100%;
+  width:auto;
   min-height: 75px;
   border: 1px solid black;
   border-radius: 10px;
@@ -64,14 +68,43 @@ body{
   transition: background-color 0.3s ease-in-out;
 }
 
+.image {
+  background-repeat:no-repeat;
+  background-size:contain;
+}
+
+.cam_on {
+  background-image: url("./cam_on.png");
+}
+
+.cam_off {
+  background-image: url("./cam_off.png");
+}
+
+.mic_on {
+  background-image: url("./mic_on.png");
+}
+
+.mic_off {
+  background-image: url("./mic_off.png");
+}
+
+.spk_on {
+  background-image: url("./spk_on.png");
+}
+
+.spk_off {
+  background-image: url("./spk_off.png");
+}
+
 .mousecursor {
   position: absolute;
   background-repeat:no-repeat;
   background-size:contain;
   background-image: url("./custom-cursor.png");
   z-index: 1;
-  width:10px;
-  height:10px;
+  width:20px;
+  height:20px;
 }
 
 .mousecursorid{
@@ -86,6 +119,33 @@ body{
 .button:hover {
   color: white;
   background-color: blue;
+}
+
+.videocontainer{
+  min-width: 175px;
+  width:5%;
+  display:inline-block;
+  border:1px solid black;
+}
+
+.video-off{
+  background-color: black;
+  width:175px; 
+  height:131.25px;
+}
+
+.webrtc-button{
+  min-width:20px;
+  min-height:20px;
+  display:inline-block;
+  background-color:aqua;
+  border-radius: 1px;
+  margin:2px;
+}
+
+.username{
+  display:inline-block;
+  font-size: 12px;
 }
 
 .container-row {

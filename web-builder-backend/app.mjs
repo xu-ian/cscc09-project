@@ -1,4 +1,4 @@
-import { createServer, validateHeaderName } from "http";
+import { createServer } from "http";
 import { readFileSync, writeFile, writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
 import express from "express";
 import {Server as SocketIOServer} from 'socket.io';
@@ -14,6 +14,13 @@ import cors from 'cors';
 const upload = multer({ dest: 'uploads/' });
 
 const PORT = 5000;
+
+const privateKey = readFileSync('server.key');
+const certificate = readFileSync('server.crt');
+const config = {
+  key: privateKey,
+  cert: certificate,
+}
 
 const app = express();
 
@@ -701,22 +708,32 @@ app.delete("/api/website/:webid/datafield/:fieldid/", validators.dataout, functi
 
 });
 
+
+//const createdserver = createServer(config, app)
 const createdserver = createServer(app)
 
+/* Websocket code */
 io = new SocketIOServer(createdserver, {cors: {origin: '*'}});
 
+/* Add socket functionality to socket when a new socket connects to the backend */
 io.on("connection", (socket) => {
   console.log("Socket connected: ", socket.id);
   sockets[socket.id] = {x: 0, y:0};
+
+  /* Tell all connected sockets about the new socket */
   socketval.forEach(function(sock){
     sock.emit("newConnection", {sock: socket.id});
   });
 
+  /* Add the socket to a list of sockets */
   socketval.push(socket);
 
+  /* Updates the position of the mouse from the socket */
   socket.on("mousePosition", (position) =>{
     sockets[socket.id] = position;
   });
+
+  /* Tells all connected sockets that a socket has disconnected */
   socket.on("disconnect", function(){
     socketval.splice(socketval.indexOf(socket), 1);
     delete sockets[socket.id];
@@ -726,6 +743,7 @@ io.on("connection", (socket) => {
   });
 
 
+  /* Sends a WebRTC Offer to a socket */
   socket.on("SendAudioLink", function(data){
     const dstsocket = socketval.find(function(sock){
         return sock.id == data.to;
@@ -739,8 +757,8 @@ io.on("connection", (socket) => {
     }
   });
 
+  /* Sends a WebRTC answer to a socket */
   socket.on("SendAudioAnswer", function(data){
-    //console.log("Sending Audio Answer");
     const dstsocket = socketval.find(function(sock){
       return sock.id == data.to;
         
@@ -754,6 +772,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  /* Sends ICE Candidates to a socket */
   socket.on("SendIceCandidate", function(data){
     //console.log("Sending Ice Candidate");
     const dstsocket = socketval.find(function(sock){
@@ -768,19 +787,28 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("MediaChange", function(data){
+    socketval.forEach(function(socket){
+      if(socket.id != data.to){
+        socket.emit("ReceiveMediaChange", data);
+      }
+    });
+  });
+
+  /* Sends an ack to the socket with all the other existing sockets */
   socket.emit("Acknowledge", Object.keys(sockets).filter(function(sock){
     return sock != socket.id;
   }));
 
+  /* Sends information to all sockets about mouse position every 100ms */
   setInterval(function(){
     socket.emit("mousePositions", sockets);
   }, 100);
 });
 
-
 export const server = createdserver.listen(PORT, function (err) {
   if (err) console.log(err);
-  else console.log("HTTP server on http://localhost:%s", PORT);
+  else console.log("HTTP server on port %s", PORT);
 });
 
 export function closeMongoDB(){

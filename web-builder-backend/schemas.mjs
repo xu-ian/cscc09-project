@@ -79,7 +79,7 @@ export class Models {
       webId: String,
       userId: {type: Schema.Types.ObjectId, ref: 'User'},
       data: Map,
-      dom: String,
+      dom: Map,
     });
 
     //Declaring composite unique key for each schema

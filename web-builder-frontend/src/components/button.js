@@ -4,10 +4,11 @@ class Button extends React.Component{
   constructor(props){
     //console.log(props);
     super(props);
+    console.log(props.dom);
     this.state = {
       dom: props.dom,
       obj: <input id={props.dom.id} type={props.type} value={props.dom.value} 
-            className={props.dom.className}></input>
+            className={props.dom.className} onClick={props.onClick}></input>
     };
   }
 

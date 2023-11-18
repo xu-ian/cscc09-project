@@ -16,6 +16,7 @@ class Form extends React.Component{
       if(node.type == 'text'){
         contents.push(<Input key={node.id} dom={node} innerhtml={node.innerHTML}/>);
       } else if(node.type == 'button'){
+        console.log(node);
         contents.push(<Button key={node.id} type={'submit'} dom={node} innerhtml={node.innerHTML}/>);
       }
     });
@@ -38,6 +39,7 @@ class Form extends React.Component{
         inputs[child.id] = child.value;
       }
     });
+    event.target.reset();
     addFormIteration(formId, inputs);
   }
   componentDidMount(){

@@ -30,7 +30,7 @@ function Builder() {
   let [mousePositions, setMousePositions] = useState(null);
   let [medias, setMedias] = useState(null);
   const [gpjsEditor, setGpjsEditor] = useState(null);
-
+  const [socket, setSocket] = useState(null);
   const onEditor = (editor) => {
     console.log('Editor loaded', { editor });
     console.log('user', user)
@@ -75,24 +75,62 @@ function Builder() {
     setMousePositions(mousePositions);
   };
 
-  const toggleAudio = function(video){
-    video.audio = !video.audio;
+  const toggleAudio = function(e, video){
+    video.muted = !video.muted;
+    if(e.target.classList.contains("spk_off")){
+      e.target.classList.replace("spk_off", "spk_on")
+    } else {
+      e.target.classList.replace("spk_on", "spk_off")
+    }
     displayMedia();
   };
+
+  const toggleCamera = function(e, socket){
+    if(e.target.classList.contains("cam_off")){
+      e.target.classList.replace("cam_off", "cam_on")
+    } else {
+      e.target.classList.replace("cam_on", "cam_off")
+    }
+    const cam_on = document.getElementById("your_camera").classList.contains("cam_on");
+    const mic_on = document.getElementById("your_microphone").classList.contains("mic_on");
+    socket.emit("MediaChange", {to:socket.id, video:cam_on, audio:mic_on});
+  }
+
+  const toggleMicrophone = function(e, socket){
+    if(e.target.classList.contains("mic_off")){
+      e.target.classList.replace("mic_off", "mic_on")
+    } else {
+      e.target.classList.replace("mic_on", "mic_off")
+    }
+    const cam_on = document.getElementById("your_camera").classList.contains("cam_on");
+    const mic_on = document.getElementById("your_microphone").classList.contains("mic_on");
+    socket.emit("MediaChange", {to:socket.id, video:cam_on, audio:mic_on});
+  }
+
+  const alterMedia = function(video, data){
+    video.video = data.video;
+    video.audio = data.audio;
+    displayMedia();
+  }
 
   const displayMedia = function(){
     let medias = []
     videos.forEach(function(video){
-      medias.push(<video key={video.dst} ref={
-        (el) => {
-          if(el != null){
-            console.log(video);
-            el.srcObject = video.src;
-            el.muted = !video.audio;
-            el.autoplay = true;
-          }
-        }
-      } width="50px" height="50px" className="remote-video" id={video.dst} onClick={() => {toggleAudio(video)}}></video>);
+      const contents = []
+      if(video.video){
+        contents.push(<video key={video.dst} ref={(el) => {
+            if(el != null){el.srcObject = video.src; el.muted = !video.audio || video.muted; el.autoplay = true;}
+          }} width="100%" className="remote-video" 
+          id={video.dst}></video>)
+      } else {
+        contents.push(<div className="video-off"></div>)
+      }
+      contents.push(<div className="spk_on image webrtc-button" onClick={(e)=>{toggleAudio(e, video)}}></div>);
+      medias.push(
+        <div className="videocontainer">
+        {contents}
+      </div>
+);
     });
     setMedias(medias);
   }
@@ -100,7 +138,7 @@ function Builder() {
   const createPeerConnection = function(srcsocket, dstsocket){
 
     /* Return the existing connection if it already exists */
-    if(getConnectionBySockId(dstsocket)){ console.log("Duplicate socket"); return getConnectionBySockId(dstsocket);}
+    if(getConnectionBySockId(dstsocket)){ return getConnectionBySockId(dstsocket);}
     const peerConnection = new RTCPeerConnection();
 
     /* Set the connection to set value when a track is added */
@@ -117,7 +155,7 @@ function Builder() {
 
         video.src = stream;
       } else{
-        videos.push({src: stream, dst: dstsocket, video: true, audio: true});
+        videos.push({src: stream, dst: dstsocket, video: true, audio: true, muted: false});
       }
       displayMedia();
     };
@@ -154,13 +192,6 @@ function Builder() {
     socket.on("mousePositions", function(data){
       updateMousePositions(socket.id, data);
     });
-
-    /**How RTC works: 
-     * - First create a new RTC Peer Connection for each other client you want to connect to, 
-     * the number of available clients should be passed when the socket connects, and updated when new clients join or leave.
-     * - RTC Peer Connection only connects two devices, so you should create as many RTC Peer Connections to link up all devices
-     * - 
-    */
 
     socket.on("newConnection", function(sock){
       navigator.getUserMedia({video: true, audio: true}, async function(stream){
@@ -232,14 +263,26 @@ function Builder() {
       }
     });
 
-        /* Test for video and audio recording */
+    socket.on("ReceiveMediaChange", function(data){
+      const video = videos.find(function(video){
+        return video.dst == data.to;
+      });
+      console.log(video);
+      if(video){
+        alterMedia(video, data);
+      }
+    });
+
+    setSocket(socket);
+
+    /* Sets up this client's webcam and audio */
     navigator.getUserMedia({video: true, audio: true}, function(stream) {
       if(!streamOut.current) return;
       streamOut.current.srcObject = stream;
       streamOut.current.muted = true;
       streamOut.current.autoplay = true;
     }, err => { console.warn(err.message)});
-
+    
     document.getElementById("root").addEventListener("mousemove", function(event){
       x = event.pageX;
       y = event.pageY;
@@ -249,13 +292,13 @@ function Builder() {
 
   return (
     <div>
-      <div className='row'>
+      <div className='row flex'>
         <PagesSidebar editor={gpjsEditor}/>    
         <GjsEditor
           grapesjs={grapesjs}
           grapesjsCss="https://unpkg.com/grapesjs/dist/css/grapes.min.css"
           options={{
-            height:'490pt',
+            height:'400pt',
             container : '#gjs',
             fromElement: true,
             showOffsets: true,
@@ -274,19 +317,20 @@ function Builder() {
                 pages: []
               }
             },
-            storageManager: false,
           }}
           onEditor={onEditor}>
         </GjsEditor>
       </div>
       {medias}
-      <div className="row" style={{minHeight:'10px'}}>
+      <div className="videocontainer">
+        <video ref={streamOut} width="100%" className="local-video" id="local-video"></video>
+          <div className="username">Your Name Here</div>
+          <div id="your_camera" className="cam_on image webrtc-button" onClick={(e)=>{toggleCamera(e, socket)}}></div>
+          <div id="your_microphone" className="mic_on image webrtc-button" onClick={(e)=>{toggleMicrophone(e, socket)}}></div>
+      </div>
+      <div className="row flex" style={{minHeight:'10px'}}>
         <a className="centered" href="credits">credits</a>
         <a className="centered" href="test">test</a>
-      </div>
-      <div>
-        {//<video ref={streamOut} width="300px" height="300px" className="local-video" id="local-video"></video>
-        }
       </div>
       {mousePositions}
     </div>

@@ -16,7 +16,8 @@ function send(method, url, data, callback) {
   }
 }
 
-const host = process.env.REACT_WEB_SERVER
+const host = "http://"+process.env.REACT_APP_SERVER
+console.log(process.env)
 //const host = "http://localhost:5000"
 
 /**********************FRAMEWORK***********************/

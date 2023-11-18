@@ -65,9 +65,13 @@ editor.on("storage:end:store", function(){
   const parser = new DOMParser();
   const doc = parser.parseFromString(editor.getHtml(), 'text/html');
   const data = editor.getProjectData();
-  console.log(data);
-  console.log(doc.body.innerHTML, editor.getProjectData());
-  storeData({assets: data.assets, pages: data.pages, styles: data.styles}, doc.body.innerHTML);
+  const datas = {};
+  editor.Pages.pages.forEach(function(page){
+    datas[page.id] = page.getMainComponent().toHTML();
+  });
+  //console.log(data);
+  //console.log(doc.body.innerHTML, editor.getProjectData());
+  storeData({assets: data.assets, pages: data.pages, styles: data.styles}, datas);
 });
 
 /* On component select, update the trait bar to show the correct traits */
