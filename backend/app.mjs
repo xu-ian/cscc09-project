@@ -13,14 +13,14 @@ import cors from 'cors';
 /* Upload path for files */
 const upload = multer({ dest: 'uploads/' });
 
-const PORT = 5000;
+const PORT = 4000;
 
-const privateKey = readFileSync('server.key');
-const certificate = readFileSync('server.crt');
-const config = {
-  key: privateKey,
-  cert: certificate,
-}
+// const privateKey = readFileSync('server.key');
+// const certificate = readFileSync('server.crt');
+// const config = {
+//   key: privateKey,
+//   cert: certificate,
+// }
 
 const app = express();
 
@@ -48,12 +48,13 @@ const generateString = function(length) {
 
 app.use(express.json());
 
-app.use(express.static("static"));
-
-app.use("*/grapesjs", express.static("node_modules/grapesjs"));
-
 /* Change this later */
-app.use(cors());
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND);
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Methods", "*");
+  next();
+});
 
 /* Mongoose connection */
 await mongoose.connect('mongodb+srv://ianxu:Hm8o6o41fmfd92o6@cluster0.v2qo3wb.mongodb.net/?retryWrites=true&w=majority');
@@ -72,6 +73,10 @@ app.use(function (req, res, next) {
 app.post("/", function (req, res, next) {
   res.json(req.body);
   next();
+});
+
+app.get("/api/", function (req, res, next) {
+  res.status(200).json({Message: "Pinged"});
 });
 
 /* Stylesheet call for the grapesjs styles */
@@ -885,6 +890,9 @@ io.on("connection", (socket) => {
     socket.emit("mousePositions", sockets);
   }, 100);
 });
+
+// app.use(express.static("static"));
+// app.use("*/grapesjs", express.static("node_modules/grapesjs"));
 
 export const server = createdserver.listen(PORT, function (err) {
   if (err) console.log(err);
