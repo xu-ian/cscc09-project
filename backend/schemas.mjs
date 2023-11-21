@@ -72,12 +72,12 @@ export class Models {
       date: {type: Date, default: Date.now}
     });
     const userSchema = new Schema({
-      username: String,
-      password: String, 
+      uid: String, 
+      sites: [{type: Schema.Types.ObjectId, ref: 'Web'}],
     });
     const webSchema = new Schema({
       webId: String,
-      userId: [String],
+      users: [{type: Schema.Types.ObjectId, ref: 'User'}],
       data: Map,
       dom: Map,
     });
@@ -89,7 +89,7 @@ export class Models {
     fieldSchema.index({fieldId: 1, webId: 1}, {unique: true});
     formSchema.index({formId: 1, webId: 1}, {unique: true});
     pageSchema.index({pageId: 1, webId: 1}, {unique: true});
-    userSchema.index({username: 1}, {unique: true});
+    userSchema.index({uid: 1}, {unique: true});
     webSchema.index({webId: 1}, {unique: true});
 
     //Loading each schema into mongoose as a model

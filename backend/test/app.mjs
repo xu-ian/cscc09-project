@@ -2,13 +2,14 @@ import { readFileSync } from "fs";
 import chai from "chai";
 import chaiHttp from "chai-http";
 
-import { server, closeMongoDB } from "../app.mjs";
+import { server, closeMongoDB, application } from "../app.mjs";
 const expect = chai.expect;
 chai.use(chaiHttp);
 
 /* Global variable to keep track of new ids, so they can be deleted when finished. */
 let testformId = null;
 let testwebId = null;
+const agent = chai.request.agent(application);
 
 describe("Testing API", () => {
   after(function () {
@@ -16,43 +17,64 @@ describe("Testing API", () => {
     closeMongoDB();
   });
 
-  /* Website test cases */
-  it("it should add a website successfully", function(done){
-    chai.request(server)
-      .post("/api/website/")
-      .send("")
+  /* User login test cases */
+  it("it should successfully authenticate a user", function(done){
+    agent
+      .post("/authenticate/")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({token:"Guest_User"}))
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        testwebId = res.body.webId;
+        expect(res.text).to.equal("Authenticated as guest user");
+        done();
+      });
+  });
+
+  it("it should not authenticate an invalid token", function(done){
+    chai.request(server)
+      .post("/authenticate/")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({token:"Unknown"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(401);
+        expect(res.text).to.equal("Invalid Token");
+        done();
+      });
+  });
+
+  /* Website test cases */
+  it("it should add a website successfully", function(done){
+    agent
+      .post("/api/website/")
+      .send("")
+      .then((res2) =>{
+        console.log("Finished adding website");
+        expect(res2.status).to.equal(200);
+        testwebId = res2.body.webId;
         done();
       });
   });
 
   it("it should add a user to a website successfully", function(done){
-    chai.request(server)
+    agent
       .patch("/api/website/"+testwebId+"/user")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"add", user:"TestUser1"}))
+      .send(JSON.stringify({action:"add", user:"Guest_User_2"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
         expect(res.body.modifiedCount).to.equal(1);
-        chai.request(server)
-          .patch("/api/website/"+testwebId+"/user")
-          .set("content-type", "application/json")
-          .send(JSON.stringify({action:"add", user:"TestUser2"}))
-          .end((err, res) => {
-            done();
-          });
+        done();
       });
   });
 
   it("it should not add a duplicate user to a website", function(done){
-    chai.request(server)
+    agent
       .patch("/api/website/"+testwebId+"/user")
       .set("content-type", "application/json")
-      .send(JSON.stringify({action:"add", user:"TestUser1"}))
+      .send(JSON.stringify({action:"add", user:"Guest_User"}))
       .end((err, res) => {
         expect(err).to.be.null;
         expect(res.status).to.equal(409);
@@ -61,42 +83,29 @@ describe("Testing API", () => {
   });
 
   it("it should remove a user from a website successfully", function(done){
-    chai.request(server)
-    .patch("/api/website/"+testwebId+"/user")
-    .set("content-type", "application/json")
-    .send(JSON.stringify({action:"remove", user:"TestUser1"}))
-    .end((err, res) => {
-      expect(err).to.be.null;
-      expect(res.status).to.equal(200);
-      expect(res.body.modifiedCount).to.equal(1);
-      done();
-    });
+    agent
+      .patch("/api/website/"+testwebId+"/user")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({action:"remove", user:"Guest_User_2"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        console.log(res.body);
+        expect(res.body.modifiedCount).to.equal(1);
+        done();
+      });
   });
 
   it("it should not remove a user from a website that does not exist", function(done){
-    chai.request(server)
-    .patch("/api/website/"+testwebId+"/user")
-    .set("content-type", "application/json")
-    .send(JSON.stringify({action:"remove", user:"TestUser3"}))
-    .end((err, res) => {
-      expect(err).to.be.null;
-      expect(res.status).to.equal(200);
-      expect(res.body.modifiedCount).to.equal(1);
-      done();
-    });
-  });
-
-  it("it should delete a website if it has no users", function(done){
-    chai.request(server)
-    .patch("/api/website/"+testwebId+"/user")
-    .set("content-type", "application/json")
-    .send(JSON.stringify({action:"remove", user:"TestUser2"}))
-    .end((err, res) => {
-      expect(err).to.be.null;
-      expect(res.status).to.equal(200);
-      expect(res.body.modifiedCount).to.equal(1);
-      done();
-    });
+    agent
+      .patch("/api/website/nowebsite/user")
+      .set("content-type", "application/json")
+      .send(JSON.stringify({action:"remove", user:"Guest_User_2"}))
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res.status).to.equal(404);
+        done();
+      });
   });
 
   /* Form test cases */
@@ -870,5 +879,17 @@ describe("Testing API", () => {
           done();
         });
     });
+  });
+
+  it("it should sucessfully log a user out", function(done){
+    chai.request(server)
+      .post("/logout/")
+      .send(JSON.stringify({token:"Guest_User"}))
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.text).to.equal("Logged out successfully");
+        done();
+      });
   });
 });

@@ -5,6 +5,7 @@ Thumbs.db
 # node.js
 node_modules
 uploads
+package-lock.json
 db
 *.sqlite
 .vscode

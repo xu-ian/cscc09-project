@@ -7,6 +7,8 @@ import mongoose, { model } from "mongoose";
 import {Models} from "./schemas.mjs";
 import {Validators} from "./validators.mjs";
 import {validationResult} from 'express-validator';
+import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from "firebase-admin/auth";
 import session from 'express-session';
 import cors from 'cors';
 
@@ -15,14 +17,26 @@ const upload = multer({ dest: 'uploads/' });
 
 const PORT = 4000;
 
-// const privateKey = readFileSync('server.key');
-// const certificate = readFileSync('server.crt');
-// const config = {
-//   key: privateKey,
-//   cert: certificate,
-// }
+/*const privateKey = readFileSync('server.key');
+const certificate = readFileSync('server.crt');
+const config = {
+  key: privateKey,
+  cert: certificate,
+}*/
 
 const app = express();
+
+const firebase = initializeApp({
+  apiKey: "AIzaSyAttQ4C1sxnVuGG9vuFZgg4dGOVAFdGgXo",
+  authDomain: "cscc09-porject.firebaseapp.com",
+  projectId: "cscc09-porject",
+  storageBucket: "cscc09-porject.appspot.com",
+  messagingSenderId: "975485542126",
+  appId: "1:975485542126:web:ddb30c608e4039d403ddff",
+  measurementId: "G-8D92M4DV33"
+});
+
+const firebaseAuth = getAuth(firebase);
 
 let io = null;
 
@@ -55,6 +69,18 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Methods", "*");
   next();
 });
+app.use(express.static("static"));
+
+app.use(
+  session({
+    secret: "please change this secret",
+    resave: false,
+    saveUninitialized: true,
+    httpOnly: true,
+    secure: true,
+    sameSite: true,
+  })
+);
 
 /* Mongoose connection */
 await mongoose.connect('mongodb+srv://ianxu:Hm8o6o41fmfd92o6@cluster0.v2qo3wb.mongodb.net/?retryWrites=true&w=majority');
@@ -66,7 +92,7 @@ console.log("Loaded models successfully");
 const validators = new Validators();
 
 app.use(function (req, res, next) {
-  console.log("HTTP request", req.method, req.url, req.body);
+  console.log("HTTP request", req.session.uid, req.method, req.url, req.body);
   next();
 });
 
@@ -75,14 +101,53 @@ app.post("/", function (req, res, next) {
   next();
 });
 
-app.get("/api/", function (req, res, next) {
-  res.status(200).json({Message: "Pinged"});
-});
-
 /* Stylesheet call for the grapesjs styles */
 app.get("/stylesheet/:name", function(req, res, next){
   const out = readFileSync('./static/style/main.css');
   return res.status(200).set({'Content-Type':'text/css'}).end(out);
+});
+
+/**************USER CALLS**************/
+
+/** Adds a session cookie for the logged in user */
+app.post("/authenticate/", function(req, res, next){
+  const token = req.body.token;
+  if(token){
+    if(token == "Guest_User"){
+      req.session.uid = "Guest_User";
+      models.user.find({uid:"Guest_User"}).exec().then(function(user){
+
+        if(!user) models.user.create({uid: "Guest_User", sites: []}).then(function(user){});
+
+      });
+      return res.status(200).end("Authenticated as guest user");
+    }
+    console.log(typeof token);
+    firebaseAuth.verifyIdToken(token).then(function(decodedToken){
+      req.session.uid = decodedToken.uid;
+      //Create does not need to succeed, just needs to make sure 
+      //the user exists, if firebase has authenticated
+      models.user.find({uid:decodedToken.uid}).exec().then(function(user){
+
+        if(!user) models.user.create({uid: decodedToken.uid, sites: []}).then(function(user){});
+
+      });
+      return res.status(200).end("Authenticated Successfully");
+
+    }).catch(function(err){return res.status(401).end("Invalid Token");});
+  } else {
+    return res.status(401).end("Not logged in");
+  }
+});
+
+/** Clears the logged in user's session cookie */
+app.post("/logout/", function(req, res, next){
+  try{
+    req.session.destroy();
+    return res.status(200).end("Logged out successfully");
+  } catch(err){
+    return res.status(500).end(err);
+  }
 });
 
 /**************DATA CALLS**************/
@@ -90,8 +155,13 @@ app.get("/stylesheet/:name", function(req, res, next){
 /* This should only update the website, but because there is only one user 
    that cannot create more websites, we add and update in this one call */
 
+   
 /** Adds/Updates a website with data  */
 app.post("/api/website/:webid/data", validators.web, function(req, res, next){
+
+  /* Checks the session to make sure user is logged in */
+  if(!req.session.uid) return res.status(401).end("Not logged in");
+
   const webid = req.params.webid;
   const data = req.body.data;
   const dom = req.body.dom;
@@ -99,7 +169,6 @@ app.post("/api/website/:webid/data", validators.web, function(req, res, next){
 
   models.web.findOneAndUpdate({webId: webid}, {data: data, dom: dom}, {new: true})
                               .exec().then(function(website){
-    console.log(website);
     if(website){
       return res.status(200).json(website);//Website exists and has been updated
     } else {//Create the website instead with the parameters
@@ -115,7 +184,11 @@ app.post("/api/website/:webid/data", validators.web, function(req, res, next){
 
 /** Gets the data of the website */
 app.get("/api/website/:webid/data", validators.web, function(req, res, next){
-  const webid = req.params.webid;
+  
+  /* Checks the session to make sure user is logged in */
+  if(!req.session.uid) return res.status(401).end("Not logged in");
+
+    const webid = req.params.webid;
   if(validationResult(req).errors.length > 0) return res.status(422).end("Invalid Website");
   //Username here later when login is implemented
 
@@ -131,66 +204,108 @@ app.get("/api/website/:webid/data", validators.web, function(req, res, next){
 /************WEBSITE CALLS*************/
 
 /** Adds a new website */
-app.post("/api/website", function(req, res, next){
+app.post("/api/website/", function(req, res, next){
 
-  /* Make this check the firebase db later */
-  const logged_in = true;
-
-  /* Set this to the id of the currently logged in user */
-  const userid = "Default";
+  const userid = req.session.uid;
+  /* Checks the session to make sure user is logged in */
+  if(!userid) return res.status(401).end("Not logged in");
   
-  /* Check if logged in */
-  if(logged_in){
-    const web = {webId:generateString(32), userId:[userid], data: {assets:[], pages: [], styles:[]}, dom: {}};
-    models.web.create(web).then(function(web){
-      return res.status(200).send(web);
-    }).catch(function(err){
+  /* Set this to the id of the currently logged in user */
+  
+  const web = {webId:generateString(32), data: {assets:[], pages: [], styles:[]}, dom: {}};
+  /* Creates a website */
+  models.web.create(web).then(function(web){
+      models.user.findOne({uid: userid}).exec().then(function(user){
+        //console.log(user.sites, web._id);
+        user.sites.push(web._id);
+        models.user.updateOne({uid: userid}, {sites: user.sites}).exec().then(function(user){
+          return res.status(200).send(web);
+
+        }).catch(function(err){return res.status(500).end(err)});
+
+      }).catch(function(err){return res.status(500).end(err)});
+  }).catch(function(err){
 
       if(err.code == 11000) return res.status(409).end("Duplicate Entry");
       else return res.status(500).send(err);
 
-    });
-  } else {
-    return res.status(401).send("Not logged in");
-  }
+  });
+
+});
+
+app.get("/api/website/", function(req, res, next){
+
+  /* Checks the session to make sure user is logged in */
+  if(!req.session.uid) return res.status(401).end("Not logged in");
+
+  /* Set this to the id of the currently logged in user */
+  const userid = req.session.uid;
+
+  models.users.find({userId: userid}).exec().then(function(websites){
+
+    return res.status(200).json(websites);
+
+  }).catch(function(err){return res.status(500).end(err)});
 });
 
 /** Updates the website by adding or removing a user */
 app.patch("/api/website/:webid/user/", function(req, res, next){
     const webId = req.params.webid;
     const action = req.body.action;
-    const user = req.body.user;
+    const otheruser = req.body.user;
     /* Make this check the firebase db later */
-    const logged_in = true;
-    if(!logged_in) return res.status(401).end("Not Signed In");
+    const userid = req.session.uid;
+    if(!userid) return res.status(401).end("Not Signed In");
 
-    /* Set this to the id of the currently logged in user */
-    const userid = "Default";
+    models.user.findOne({uid:userid}).populate('sites').exec().then(function(user){
+      console.log("User found");
+      const site = user.sites.find(function(site){
+        return site.webId == webId;
+      });
+      if(!site) return res.status(404).end("Website not found");
+      console.log("Website found");
+      models.user.findOne({uid:otheruser}).populate('sites').exec().then(function(user){
 
-    models.web.findOne({webId:webId}).exec().then(function(web){
-
-      const users = web.userId;
-      if(users.includes(userid)){//Permitted to modify
+        if(!user) return res.status(404).end("User not found");
+        console.log("Other user found");
         if(action == "add"){//Adds a new user to the website
-          if(users.includes(user)){return res.status(409).end("Duplicate Entry");}
-          users.push(user);
-          models.web.updateOne({webId:webId}, {userId:users}).exec().then(function(web){
-            return res.status(200).send(web);
-          }).catch(function(err){return res.status(500).end(err)});          
+
+          //Check user already has access to the website
+          const site2 = user.sites.find(function(site){
+            return site.webId == webId;
+          });
+          console.log("Checking site");
+          if(site2) return res.status(409).end("Cannot be added twice");
+
+          //Adds the website id to the array
+          user.depopulate('sites');
+          user.sites.push(site._id);
+          models.user.updateOne({uid:otheruser}, {sites: user.sites}).exec().then(function(user){
+
+            return res.status(200).json(user);
+
+          }).catch(function(err){return res.status(500).end(err)});
+         
         } else if(action == "remove"){//Removes a user from the website
-          users.splice(users.indexOf(user), 1);
-          models.web.updateOne({webId:webId}, {userId:users}).exec().then(function(web){
-            //If this is the last user, then delete the website as well
-            if(users.length == 0){models.web.findOneAndDelete({webId: webId}).exec();}
-            return res.status(200).send(web);
+
+          //Removes the website if it exists
+          const index = user.sites.findIndex(function(site){
+            return site.webId == webId;
+          });
+          console.log(index, user.sites);
+          user.depopulate('sites')
+          if(index != -1){user.sites.splice(index, 1);}          
+          models.user.updateOne({uid:otheruser}, {sites:user.sites}).exec().then(function(user){
+
+            return res.status(200).json(user);
+
           }).catch(function(err){return res.status(500).end(err)});
         
         } else {//Errors on unknown action
           return res.status(422).end("Invalid action");
         }
-      } else {return res.status(401).end("Forbidden");}//Not permitted to modify
-
-    }).catch(function(err){console.log(err); return res.status(404).end("Website not found")});
+      }).catch(function(err){return res.status(500).end(err)});
+    }).catch(function(err){return res.status(500).end(err)});
 });
 
 /**************FORM CALLS**************/
@@ -898,6 +1013,8 @@ export const server = createdserver.listen(PORT, function (err) {
   if (err) console.log(err);
   else console.log("HTTP server on port %s", PORT);
 });
+
+export const application = app;
 
 export function closeMongoDB(){
   mongoose.disconnect();
