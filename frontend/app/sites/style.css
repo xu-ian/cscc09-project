@@ -49,7 +49,7 @@ body{
 
 .website-name{
   font-family:'Times New Roman', serif;
-  font-size: 20px;
+  font-size: 10px;
 }
 
 /* Websites display css */
@@ -61,13 +61,13 @@ body{
 
 .website{
   min-width: 19%;
-  aspect-ratio: 4/1;
+  aspect-ratio: 6/1;
   border: 1px solid black;
   justify-content: space-evenly;
 }
 
 .website-go{
-  min-width:50px;
+  min-width:30px;
   aspect-ratio: 1/1;
   background-image: url('./go.png');
   background-repeat: no-repeat;
@@ -76,7 +76,7 @@ body{
 }
 
 .website-share{
-  min-width:50px;
+  min-width:30px;
   aspect-ratio: 1/1;
   background-image: url('./share.png');
   background-repeat: no-repeat;
@@ -85,7 +85,7 @@ body{
 }
 
 .website-delete{
-  min-width:50px;
+  min-width:30px;
   aspect-ratio: 1/1;
   background-image: url("./delete.png");
   background-repeat: no-repeat;

@@ -26,7 +26,7 @@ describe("Testing API", () => {
       .end((err, res) =>{
         expect(err).to.be.null;
         expect(res.status).to.equal(200);
-        expect(res.text).to.equal("Authenticated as guest user");
+        expect(res.body.message).to.equal("Authenticated as guest user");
         done();
       });
   });
@@ -57,6 +57,17 @@ describe("Testing API", () => {
       });
   });
 
+  it("it should retrieve all websites for a given user", function(done){
+    agent
+      .get("/api/website/")
+      .end((err, res)=>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
+        expect(res.body.sites.length).to.equal(1);
+        done();
+      });
+  });
+
   it("it should add a user to a website successfully", function(done){
     agent
       .patch("/api/website/"+testwebId+"/user")
@@ -82,6 +93,16 @@ describe("Testing API", () => {
       });
   });
 
+  it("it should not remove a website if another user has access to it", function(done){
+    agent
+      .delete("/api/website/"+testwebId)
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(401);
+        done();
+      });
+  });
+
   it("it should remove a user from a website successfully", function(done){
     agent
       .patch("/api/website/"+testwebId+"/user")
@@ -92,6 +113,16 @@ describe("Testing API", () => {
         expect(res.status).to.equal(200);
         console.log(res.body);
         expect(res.body.modifiedCount).to.equal(1);
+        done();
+      });
+  });
+
+  it("it should remove a website successfully", function(done){
+    agent
+      .delete("/api/website/"+testwebId)
+      .end((err, res) =>{
+        expect(err).to.be.null;
+        expect(res.status).to.equal(200);
         done();
       });
   });

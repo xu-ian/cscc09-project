@@ -3,6 +3,7 @@ import axios from 'axios'
 //Replace with fetch or axios later
 function send(method, url, data, callback) {
   const xhr = new XMLHttpRequest();
+  xhr.withCredentials = true;
   xhr.onload = function () {
     if (xhr.status !== 200)
       callback("[" + xhr.status + "]" + xhr.responseText, null);
@@ -20,15 +21,57 @@ const host = `${process.env.NEXT_PUBLIC_BACKEND}`
 // console.log('env', process.env)
 //const host = "http://localhost:5000"
 
-export function getPing(){
-  send('GET', host + '/api/', null, function(err, res){
+
+/**********************FRAMEWORK***********************/
+
+/*********************USER API*************************/
+
+export function sendToken(token, callback){
+  send('POST', host + "/authenticate/", {token: token}, callback);
+}
+
+export function logout(callback){
+  send('POST', host + '/logout/', null, callback);
+}
+
+/********************WEBSITE API***********************/
+
+/** Gets all of the user's websites */
+export function getSites(callback){
+  send('GET', host + "/api/website/", null, function(err, res){
     if(err) console.log(err);
-    else console.log(res);
+    callback(err, res);
   });
 }
 
+export function addSite(callback){
+  send('POST', host + "/api/website", null, function(err, res){
+    if(err) console.log(err);
+    callback(err, res)
+  });
+}
 
-/**********************FRAMEWORK***********************/
+export function removeSite(webId, callback){
+  send('DELETE', host + "/api/website/" + webId, null, function(err, res){
+    if(err) console.log(err);
+    callback(err, res);
+  });
+}
+
+export function updateUser(action, user, callback){
+  send('PATCH', host + "/api/website/", {action:action, user: user}, function(err, res){
+    if(err) console.log(err);
+    callback(err, res)
+  });
+}
+
+/** Sets the current working website for a user */
+export function setSite(webid, callback){
+  send("POST", host + "/setSite/" + webid, null, function(err, res){
+   if(err) console.log(err);
+   callback(err, res);
+  });
+}
 
 /*********************DATA API*************************/
 
