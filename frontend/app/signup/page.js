@@ -28,7 +28,7 @@ function Signup() {
       return;
     }
     // console.log('user', user)
-    if (user) router.push("/");
+    if (user) router.push("/sites");
   }, [user, loading]);
 
 
@@ -69,7 +69,7 @@ function Signup() {
           email: user.email,
         });
       }
-      router.push("/")
+      router.push("/sites")
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -86,7 +86,7 @@ function Signup() {
         authProvider: "local",
         email,
       });
-      router.push("/")
+      router.push("/sites")
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -125,7 +125,7 @@ function Signup() {
           className="sl-sign-up-btn"
           type="submit"
           value="Sign Up"
-          onClick={() => {registerWithEmailAndPassword(user, email, password)}}
+          onClick={() => {registerWithEmailAndPassword(username, email, password)}}
           />
                 or
           <div className="sl-others" onClick={() => {signUpWithGoogle()}}>

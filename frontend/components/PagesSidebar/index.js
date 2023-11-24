@@ -14,19 +14,16 @@ function PagesSidebar({editor}) {
       return
     }
     
-    const data = [{
+    const data = {
       id: 'page-1',
-      name: 'Home Page huh',
+      name: 'Home Page',
       component: '<div id="comp1">Start Editing</div>',
       styles: '#comp1 { color: red }',
-    }]
+    }
     const pm = editor.Pages;
 
     if (pm.getAll().length === 0) {
-      for (let index = 0; index < data.length; index++) {
-        const element = data[index];
-        pm.add(element);
-      }
+      pm.add(data);
     }
 
     setPages(pm.getAll())

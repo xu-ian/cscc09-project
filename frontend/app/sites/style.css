@@ -9,8 +9,8 @@ body{
 }
 
 .flex-col-5{
-  width:19%;
-  margin:auto;
+  width: 350px;
+  margin:20px;
   display:flex;
   align-items:center;
 }
@@ -19,7 +19,7 @@ body{
 .top-navbar{
   min-height:50px;
   background-color: gray;
-  justify-content: space-between;
+  justify-content: right;
 }
 
 .button-transition{
@@ -27,8 +27,24 @@ body{
 }
 
 .add-web-button{
+  min-width: 40px;
+  aspect-ratio: 3/1;
+  padding: 5px;
+  background-color: rgb(183, 183, 183);
+  color: black;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+
+}
+
+.add-web-button-img{
   min-width: 75px;
-  aspect-ratio: 2/1;
+  min-height: 40px;
   padding: 0px;
   background-color: rgb(183, 183, 183);
   color: black;
@@ -36,15 +52,24 @@ body{
   background-image: url('./add.png');
   background-repeat: no-repeat;
   background-size:contain;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .button-transition:hover{
   background-color: rgb(108, 108, 108);
 }
 
+.button-transition:hover .add-web-button-img{
+  background-color: rgb(108, 108, 108);
+}
+
 .username-font{
   font-family: 'Oswald', sans-serif;
-  font-size: 32px;
+  font-size: 20px;
 }
 
 .website-name{
@@ -54,9 +79,13 @@ body{
 
 /* Websites display css */
 .websites-display{
+  display: flex;
+  flex-direction: row;
   justify-content: flex-start;
+  align-items: center;
   width:100%;
   flex-wrap:wrap;
+  margin: 50px;
 }
 
 .website{
@@ -91,4 +120,26 @@ body{
   background-repeat: no-repeat;
   background-size:contain;
   border-radius: 5px;
+}
+
+.sign-out {
+  height: 40px;
+  min-width: 100px;
+  margin: 10px 40px;
+  background-color: rgb(253, 131, 131);
+  font-size: 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  &:hover{
+    background-color: rgb(150, 0, 0);
+    filter: brightness('75%');
+  }
+}
+
+.group {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }

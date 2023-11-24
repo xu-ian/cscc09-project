@@ -26,7 +26,7 @@ function Login() {
       // maybe trigger a loading screen
       return;
     }
-    if (user) router.push("/");
+    if (user) router.push("/sites");
   }, [user, loading]);
 
   const signInWithGoogle = async () => {
@@ -44,7 +44,7 @@ function Login() {
           email: user.email,
         });
       }
-      router.push("/");
+      router.push("/sites");
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -54,7 +54,7 @@ function Login() {
   const logInWithEmailAndPassword  = async (email, password) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+      router.push("/sites");
     } catch (err) {
       console.error(err);
       alert(err.message);

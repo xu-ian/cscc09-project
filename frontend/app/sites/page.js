@@ -2,9 +2,12 @@
 import { query, getDocs, collection, where, addDoc } from "firebase/firestore";
 import { useEffect, forceUpdate, useState, useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import {
+  signOut
+} from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { sendToken, getSites, addSite, removeSite, updateUser, setSite } from "@/api/logic/api.mjs";
-import { auth } from '../../api/firebase.js'
+import { auth, db } from '../../api/firebase.js'
 
 import "./style.css"
 
@@ -15,6 +18,14 @@ export default function Websites(){
   const [username, setUsername] = useState("Default Username");
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (loading) {
+      // maybe trigger a loading screen
+      return;
+    }
+    if (!user) router.push("/");
+  }, [user, loading]);
 
   const updateSites = function(){
     getSites(function(err, res){
@@ -44,6 +55,10 @@ export default function Websites(){
       }
     });
   }
+
+  const logout = () => {
+    signOut(auth);
+  };
 
   const share_website = function(e){
     console.log(e);
@@ -76,11 +91,12 @@ export default function Websites(){
   }
 
   useEffect(() =>{
-    console.log(user);
     if(user){
       user.getIdToken().then(function(idToken){
-        sendToken(idToken, function(err, res){
-          setUsername(res.username + "(" + res.uid + ")");
+        sendToken(idToken, async function(err, res){
+          const q = query(collection(db, "users"), where("uid", "==", user.uid));
+          const docs = await getDocs(q);
+          setUsername(docs.docs[0].data().name + " (uid: " + res.uid + ")");
           if(err) console.log(err);
           else {
             updateSites();
@@ -90,14 +106,33 @@ export default function Websites(){
     }
   },[user]);
 
-  return(
-  <div>    
-    <div id="navbar" className="flex-col-1 top-navbar">
-      <button id="add_new_website" className="add-web-button button-transition" type="button" onClick={(e)=>{make_website(e)}}></button>
-      <div id="user" className="username-font">{username}</div>
+  return (
+    <div>
+      <div id="navbar" className="flex-col-1 top-navbar">
+        <div className="group">
+          <div id="user" className="username-font">
+            {username}
+          </div>
+          <button className="sign-out" onClick={logout}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+      <div id="websites_display" className="websites-display">
+        <button
+          className="add-web-button button-transition"
+          type="button"
+          onClick={(e) => {
+            make_website(e);
+          }}
+        >
+          Add New Website
+          <div
+            className="add-web-button-img button-transition"
+          ></div>
+        </button>
+        {sites}
+      </div>
     </div>
-    <div id="websites_display" className="flex-col-1 websites-display">
-      {sites}
-    </div>
-  </div>);
+  );
 }
