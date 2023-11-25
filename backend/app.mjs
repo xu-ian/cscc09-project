@@ -93,7 +93,7 @@ console.log("Loaded models successfully");
 const validators = new Validators();
 
 app.use(function (req, res, next) {
-  console.log("HTTP request", req.session.uid, req.method, req.url, req.body);
+  //console.log("HTTP request", req.session.uid, req.method, req.url, req.body);
   next();
 });
 
@@ -355,6 +355,10 @@ app.patch("/api/website/:webid/user/", function(req, res, next){
             });
             if(removeIndex != -1){web.users.splice(removeIndex, 1)}
             models.web.updateOne({webId: webId},{users: web.users}).exec();
+            //Remove the website if the number of users is 0.
+            if(web.users.length == 0){
+              models.web.findOneAndDelete({webId: webId}, {users: web.users}).exec();
+            }
           }).catch(function(err){console.log(err)});
 
           models.user.updateOne({uid:otheruser}, {sites:user.sites}).exec().then(function(user){
@@ -1027,35 +1031,22 @@ io = new SocketIOServer(createdserver, {cors: {origin: '*'}});
 
 /* Add socket functionality to socket when a new socket connects to the backend */
 io.on("connection", (socket) => {
+  //console.log(socket.upgradeReq.url);
   console.log("Socket connected: ", socket.id);
   sockets[socket.id] = {x: 0, y:0};
-
-  /* Tell all connected sockets about the new socket */
-  socketval.forEach(function(sock){
-    sock.emit("newConnection", {sock: socket.id});
-  });
 
   /* Add the socket to a list of sockets */
   socketval.push(socket);
 
   /* Updates the position of the mouse from the socket */
   socket.on("mousePosition", (position) =>{
-    sockets[socket.id] = position;
+    sockets[socket.id].x = position.x;
+    sockets[socket.id].y = position.y;
   });
-
-  /* Tells all connected sockets that a socket has disconnected */
-  socket.on("disconnect", function(){
-    console.log("Socket disconnected: ", socket.id);
-    socketval.splice(socketval.indexOf(socket), 1);
-    delete sockets[socket.id];
-    socketval.forEach(function(sock){
-      sock.emit("connectionLoss", {sock: socket.id});
-    });
-  });
-
 
   /* Sends a WebRTC Offer to a socket */
   socket.on("SendAudioLink", function(data){
+    console.log("Sent and audio link to:", data.to);
     const dstsocket = socketval.find(function(sock){
         return sock.id == data.to;
     });
@@ -1072,7 +1063,6 @@ io.on("connection", (socket) => {
   socket.on("SendAudioAnswer", function(data){
     const dstsocket = socketval.find(function(sock){
       return sock.id == data.to;
-        
     });
 
     if(dstsocket){
@@ -1098,18 +1088,66 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("MediaChange", function(data){
-    socketval.forEach(function(socket){
-      if(socket.id != data.to){
-        socket.emit("ReceiveMediaChange", data);
+  socket.emit("WebsiteRequest", null);
+
+  socket.on("WebsiteResponse", function(webid){
+    //Set the website that the socket is attached to.
+    sockets[socket.id].webid = webid;
+
+    /* Tell all connected sockets about the new socket */
+    socketval.forEach(function(sock){
+      if(sock.webid == webid){
+        sock.emit("newConnection", {sock: socket.id});
       }
     });
+
+    socketval.find(function(sock){
+      return socket.id == sock.id;
+    }).webid = webid;
+    
+    /* Tells all connected sockets that a socket has disconnected */
+    socket.on("disconnect", function(){
+      console.log("Socket disconnected: ", socket.id);
+      socketval.splice(socketval.indexOf(socket), 1);
+      delete sockets[socket.id];
+      socketval.forEach(function(sock){
+        if(sock.webid == webid){
+          sock.emit("connectionLoss", {sock: socket.id});
+        }
+      });
+    });
+
+    socket.on("MediaChange", function(data){
+      socketval.forEach(function(socket){
+        if(socket.id != data.to){
+          socket.emit("ReceiveMediaChange", data);
+        }
+      });
+    });
+
+    const keys = Object.keys(sockets).filter(function(sock){
+      return sock != socket.id;
+    });
+
+    let socketids = [];
+
+    if(keys.length == 1){
+      if(sockets[keys].webid == webid){
+        socketids.push(keys);
+      } 
+    } else{
+      keys.forEach(function(key){
+        if(sockets[key].webid == webid){
+          socketids.push(key);
+        }
+      });
+    }
+
+    /* Sends an ack to the socket with all the other existing sockets */
+    socket.emit("Acknowledge", socketids);      
   });
 
-  /* Sends an ack to the socket with all the other existing sockets */
-  socket.emit("Acknowledge", Object.keys(sockets).filter(function(sock){
-    return sock != socket.id;
-  }));
+
 
   /* Sends information to all sockets about mouse position every 100ms */
   setInterval(function(){

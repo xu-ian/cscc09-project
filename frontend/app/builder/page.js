@@ -48,6 +48,17 @@ function Builder() {
     RTCSessionDescription = window.RTCSessionDescription;
   }
   
+  const readCookie = (name) => {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+      var c = ca[i];
+      while (c.charAt(0)==' ') c = c.substring(1,c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+  }
+
   /** Returns the connection associated with the socket */
   const getConnectionBySockId = (sockid) => {
     const connection = connections.find(function(connection){
@@ -132,9 +143,9 @@ function Builder() {
           }} width="100%" className="remote-video" 
           id={video.dst}></video>)
       } else {
-        contents.push(<div className="video-off"></div>)
+        contents.push(<div key="video" className="video-off"></div>)
       }
-      contents.push(<div className="spk_on image webrtc-button" onClick={(e)=>{toggleAudio(e, video)}}></div>);
+      contents.push(<div key="speaker" className="spk_on image webrtc-button" onClick={(e)=>{toggleAudio(e, video)}}></div>);
       medias.push(
         <div className="videocontainer">
         {contents}
@@ -197,7 +208,7 @@ function Builder() {
     /* Sockets */
     //const socket = socketIOClient("ws://localhost:5000");
     const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
-
+    console.log(document.cookie);
     socket.on("mousePositions", function(data){
       updateMousePositions(socket.id, data);
     });
@@ -224,7 +235,12 @@ function Builder() {
       displayMedia();
     });
 
+    socket.on("WebsiteRequest", function(){
+      socket.emit("WebsiteResponse", readCookie("site"));
+    });
+
     socket.on('Acknowledge', function(sockets){
+      console.log(sockets);
       navigator.getUserMedia({video: true, audio: true}, function(stream) {
         
         sockets.forEach(async function(dstsocket){

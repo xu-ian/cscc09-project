@@ -16,6 +16,7 @@ export default function Websites(){
   const [user, loading, error] = useAuthState(auth);
   const [sites, setSites] = useState([]);
   const [username, setUsername] = useState("Default Username");
+  const [ShareDisplay, setShareDisplay] = useState([]);
 
   const router = useRouter();
 
@@ -37,7 +38,7 @@ export default function Websites(){
             <div id={site.webId} key={site.webId} className="website flex-col-5">
               <div className="website-name">{site.webId}</div>
               <button type="button" className="website-go button-transition" onClick={(e)=>{open_website(e)}}></button>
-              <button type="button" className="website-share button-transition" onClick={(e)=>{share_website(e)}}></button>
+              <button type="button" className="website-share button-transition" onClick={(e)=>{open_share_tab(e)}}></button>
               <button type="button" className="website-delete button-transition" onClick={(e)=>{delete_website(e)}}></button>
             </div>);
         });
@@ -52,6 +53,11 @@ export default function Websites(){
     setSite(webid, function(err, res){
       if(!err){
         window.location = "/builder";
+        var date = new Date();
+        //Set expiry date to tomorrow
+		    date.setTime(date.getTime()+(24*60*60*1000));
+    		var expires = "expires="+date.toGMTString();
+        document.cookie = 'site='+webid+';'+expires+'; path=/';
       }
     });
   }
@@ -60,15 +66,29 @@ export default function Websites(){
     signOut(auth);
   };
 
-  const share_website = function(e){
-    console.log(e);
-    const webid = e.target.parentNode.id;
-    const userid = ""; // Get this from somewhere
-    updateUser(webid, userid, function(err, res){
+  const share_website = function(e, web, action){
+    const userid = document.getElementById("modify_user_input").value;
+    updateUser(action, web, userid, function(err, res){
       if(!err){
         console.log("Success");
       }
+      close_share_tab();
     });
+  }
+
+  const open_share_tab = function(e){
+    const web = e.target.parentNode.id;
+    setShareDisplay(<div className="overlay" onClick={()=>{close_share_tab()}}>
+      <div className="share-menu" onClick={(e)=>{e.stopPropagation()}}>
+        <input id="modify_user_input" className="user-field" type="text" placeholder="Input User Id"></input>
+        <button type="button" className="website-add-user" onClick={(e)=>{share_website(e, web, "add")}}></button>
+        <button type="button" className="website-remove-user" onClick={(e)=>{share_website(e, web, "remove")}}></button>
+      </div>
+    </div>)
+  }
+
+  const close_share_tab = function(){
+    setShareDisplay([]);
   }
 
   const make_website = function(){
@@ -133,6 +153,7 @@ export default function Websites(){
         </button>
         {sites}
       </div>
+      {ShareDisplay}
     </div>
   );
 }

@@ -58,8 +58,8 @@ export function removeSite(webId, callback){
   });
 }
 
-export function updateUser(action, user, callback){
-  send('PATCH', host + "/api/website/", {action:action, user: user}, function(err, res){
+export function updateUser(action, web, user, callback){
+  send('PATCH', host + "/api/website/"+web+"/user", {action:action, user: user}, function(err, res){
     if(err) console.log(err);
     callback(err, res)
   });

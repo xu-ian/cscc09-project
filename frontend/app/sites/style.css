@@ -83,7 +83,7 @@ body{
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  width:100%;
+  width:auto;
   flex-wrap:wrap;
   margin: 50px;
 }
@@ -122,6 +122,24 @@ body{
   border-radius: 5px;
 }
 
+.website-add-user{
+  min-width:40px;
+  aspect-ratio: 1/1;
+  background-image: url("./add_user.png");
+  background-repeat: no-repeat;
+  background-size:contain;
+  border-radius: 5px;
+}
+
+.website-remove-user{
+  min-width:40px;
+  aspect-ratio: 1/1;
+  background-image: url("./remove_user.png");
+  background-repeat: no-repeat;
+  background-size:contain;
+  border-radius: 5px;
+}
+
 .sign-out {
   height: 40px;
   min-width: 100px;
@@ -136,6 +154,40 @@ body{
     filter: brightness('75%');
   }
 }
+
+.overlay{
+  position:fixed;
+  top:0px;
+  opacity:0.9;
+  background-color: black;
+  width:100vw;
+  height:100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.share-menu{
+  justify-content: flex-start;
+  opacity:1;
+  margin:auto;
+  position:absolute;
+  background-color: white;
+  padding:20px;
+  width:auto;
+  height:auto;
+  display:flex;
+  border-radius: 10px;
+}
+
+.user-field{
+  padding:5px;
+  font-size:20px;
+}
+
+
 
 .group {
   display: flex;
