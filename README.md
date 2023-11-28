@@ -1,4 +1,4 @@
-# __your_project_name__
+# WebBuilder
 
 ## Project URL
 
@@ -22,28 +22,41 @@ We split the app into two separate folders frontend and backend.
 
 We used React to design the frontend of the application and grapesJS as a base for the website designer.
 
-Each page in the frontend is structured under the react next js layout. 
+Each page in the frontend is structured under the react next js layout?{For Jawad: Correct this if I am wrong} 
 
 {For Jawad: Explain the frontend sign in using firebase}
 
-Video and audio sharing for collaboration was implemented in the website builder part of the application using WebRTC and websockets. Whenever a user opens the website builder and would connect to the server. The server would then send it a list of all other people working on the same website and add their video and audio stream to your display.
+Video and audio sharing for collaboration was implemented in the website builder part of the application using WebRTC and websockets. All socket connections are stored in memory server side, socket ids are stored in memory client side. Clients create the initial connection through the server, but sustain connection without the server afterwards. 
 
 ### Backend
 
-The backend is a REST API built using express and mongodb. Express is the middleware which processes the requests and sends responses, mongodb is the database which we chose to use to store the data being used by the clients. The login is not held in the backend, and is instead passed from frontend to backend through a firebase token.
+The backend is a REST API built using express and mongodb.
+
+Express is the backend framework which processes REST API requests and sends responses, Mongodb is the database which we chose to use to store the data being used by the clients.
+
+Database queries are done through the mongoose API. 
+
+The login is not held in the backend, and is instead passed from frontend to backend through a firebase token.
+
 The backend has a firebase server library which decodes and authenticates the token. The application validates requests using express-validator. 
+
+CORS headers are manually set by the application instead of using the cors library. 
+
+Used helmet library to for additional security.
 
 ## Deployment
 
 **Task:** Explain how you have deployed your application. 
+
+{For Jawad: Fill this in}
 
 ## Challenges
 
 **Task:** What is the top 3 most challenging things that you have learned/developed for you app? Please restrict your answer to only three items. 
 
 1. Using WebRTC and websockets to videoconference
-2. 
-3. 
+2. Deploying an HTTPS frontend and server so that connections are not refused{For Jawad: Correct this statement if untrue}
+3. {For Jawad: Fill this in}
 
 ## Contributions
 
@@ -59,7 +72,7 @@ The backend has a firebase server library which decodes and authenticates the to
 
 ### Jawad Arshad
 
-
+{For Jawad: Fill in what you did here}
 
 # One more thing? 
 

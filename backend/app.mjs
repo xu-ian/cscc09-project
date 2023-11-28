@@ -10,6 +10,7 @@ import {validationResult} from 'express-validator';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from "firebase-admin/auth";
 import session from 'express-session';
+import helmet from "helmet";
 import cors from 'cors';
 
 /* Upload path for files */
@@ -70,7 +71,10 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
+
 app.use(express.static("static"));
+
+app.use(helmet());
 
 app.use(
   session({
