@@ -392,11 +392,11 @@ app.delete("/api/website/:webid", function(req, res, next){
         const position = user.sites.findIndex(function(site){
           return JSON.stringify(site) == JSON.stringify(web._id); 
         });
-        console.log(position);
         user.sites.splice(position, 1);
+      
         //Removes the website from the user
-        console.log(user.sites);
         models.user.updateOne({uid:userid}, {sites:user.sites}).exec();
+      
         //Removes the website entry from the database
         models.web.findOneAndDelete({webId: webId}).exec().then(function(result){
           return res.status(200).send(result);
@@ -414,7 +414,7 @@ app.delete("/api/website/:webid", function(req, res, next){
 /** Adds a form to the database */
 app.post("/api/website/:webid/form/", validators.form, function(req, res, next){
   //Setting up passed information
-  const webId = req.session.webid;
+  const webId = req.session.webId;
   //const webId = req.params.webid;
   const formId = req.body.id;
   const formName = req.body.name;
