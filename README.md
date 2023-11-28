@@ -1,48 +1,66 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/KRLE_tfD)
-# WebSimple
+# __your_project_name__
 
-## Team Members
+## Project URL
 
-- Ian Xu 1006319208
-- Jawad Arshad 1006280917
+**Task:** Provide the link to your deployed application. Please make sure the link works. 
 
-## Description
+## Project Video URL 
 
-WebSimple is a web app that anybody can use to create a website with working frontend and backend without any coding involved. 
-A user can design the front-end, which supports multiple pages, components like forms, buttons, input fields, images, text, and more.
-A user can connect the backend, by creating connections that link two components together and let them read and write data from the
-same source. A user can also 'deploy' their web application on the app.
+**Task:** Provide the link to your youtube video. Please make sure the link works. 
 
-## Features in the Beta Version
+## Project Description
 
-The beta version should be a frontend website designer and backend data linking that supports these components:
-- A form component
-- An image component with a hardcoded or dynamic image
-- Most input fields
-- A dynamic or hardcoded data display field
-- Buttons with functionality like changing pages, or affecting visibility of components
-- Ability to link components to each other on backend 
-- Ability to create multiple pages on the website designer
-- Ability to navigate between multiple pages on website designer
-- Ability to 'deploy' a website.
+**Task:** Provide a detailed description of your app
 
-## Additional Features in the Final Version
+## Development
 
-The final version will include a login system for multiple users and the ability for users to maintain multiple websites at a time.
-The final version will also include file upload and download if it cannot be done in the beta version.
+**Task:** Leaving deployment aside, explain how the app is built. Please describe the overall code design and be specific about the programming languages, framework, libraries and third-party api that you have used. 
 
-## Tech Stack
+We split the app into two separate folders frontend and backend.
 
-For the frontend, we will use `React` with `Javascript` and `GrapesJS`.
+### Frontend
 
-For the backend, will use `ExpressJS` and a REST API
+We used React to design the frontend of the application and grapesJS as a base for the website designer.
 
-For the data we used `MongoDB` to store the data.
+Each page in the frontend is structured under the react next js layout. 
 
-## Technical Challenges
+{For Jawad: Explain the frontend sign in using firebase}
 
-- Figuring out how to create API calls for dynamically changing objects
-- Figuring out how to handle components, so that all possible component combinations are considered without bloating test cases
-- Figuring out how to handle file download for small and large files
-- Figuring out how to add form components fields to grapeJs
-- Learning how to use GrapesJS to create the frontend designer
+Video and audio sharing for collaboration was implemented in the website builder part of the application using WebRTC and websockets. Whenever a user opens the website builder and would connect to the server. The server would then send it a list of all other people working on the same website and add their video and audio stream to your display.
+
+### Backend
+
+The backend is a REST API built using express and mongodb. Express is the middleware which processes the requests and sends responses, mongodb is the database which we chose to use to store the data being used by the clients. The login is not held in the backend, and is instead passed from frontend to backend through a firebase token.
+The backend has a firebase server library which decodes and authenticates the token. The application validates requests using express-validator. 
+
+## Deployment
+
+**Task:** Explain how you have deployed your application. 
+
+## Challenges
+
+**Task:** What is the top 3 most challenging things that you have learned/developed for you app? Please restrict your answer to only three items. 
+
+1. Using WebRTC and websockets to videoconference
+2. 
+3. 
+
+## Contributions
+
+**Task:** Describe the contribution of each team member to the project. Please provide the full name of each team member (but no student number). 
+
+### Ian Xu
+
+- Made the video collaboration and mouse tracking features on website building page using websockets and WebRTC. 
+- Created some components for the website building page.
+- Created the main menu for users. 
+- Created the page to test website designs.
+- Created the some test cases for the server side endpoints.
+
+### Jawad Arshad
+
+
+
+# One more thing? 
+
+**Task:** Any additional comment you want to share with the course staff? 
