@@ -109,6 +109,7 @@ app.post("/", function (req, res, next) {
 /* Stylesheet call for the grapesjs styles */
 app.get("/stylesheet/:name", function(req, res, next){
   const out = readFileSync('./static/style/main.css');
+  res.set({'Cross-Origin-Resource-Policy':'cross-origin'});
   return res.status(200).set({'Content-Type':'text/css'}).end(out);
 });
 
