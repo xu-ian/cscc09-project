@@ -207,6 +207,7 @@ function Builder() {
   useEffect(() =>{
     /* Sockets */
     //const socket = socketIOClient("ws://localhost:5000");
+    // const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     console.log(document.cookie);
     socket.on("mousePositions", function(data){
