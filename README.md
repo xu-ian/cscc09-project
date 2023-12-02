@@ -2,7 +2,7 @@
 
 ## Project URL
 
-**Task:** Provide the link to your deployed application. Please make sure the link works. 
+https://front.jawadarshad.me
 
 ## Project Video URL 
 
