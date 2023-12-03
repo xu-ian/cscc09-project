@@ -1152,6 +1152,11 @@ io.on("connection", (socket) => {
     socket.emit("Acknowledge", socketids);      
   });
 
+  socket.on("chatMessage", (data)=>{
+    console.log('chatMessage', data)
+    socket.emit('chatMessage', data)
+  })
+
 
 
   /* Sends information to all sockets about mouse position every 100ms */

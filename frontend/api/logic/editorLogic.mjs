@@ -245,10 +245,18 @@ editor.on('component:remove', function(e){
   }
 });
 
+
 loadData(null, function(err, res){
   if(res){
     editor.loadProjectData(res.data);    
   }
+  const interval = setInterval(function() {
+    loadData(null, function(err, res){
+      if(res){
+        editor.loadProjectData(res.data);    
+      }
+    });
+  }, 3000);
   loading = false;
 });
 }

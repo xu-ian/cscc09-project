@@ -14,6 +14,7 @@ import 'grapesjs/dist/css/grapes.min.css'
 import '../../components/styles/main.css'
 
 import PagesSidebar from '../../components/PagesSidebar'
+import ChatBar from '../../components/ChatBar'
 
 import { setupEditor } from "../../api/logic/editorLogic.mjs";
 
@@ -207,6 +208,7 @@ function Builder() {
   useEffect(() =>{
     /* Sockets */
     //const socket = socketIOClient("ws://localhost:5000");
+    // const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     console.log(document.cookie);
     socket.on("mousePositions", function(data){
@@ -345,6 +347,7 @@ function Builder() {
           }}
           onEditor={onEditor}>
         </GjsEditor>
+        <ChatBar />  
       </div>
       {medias}
       <div className="videocontainer">
