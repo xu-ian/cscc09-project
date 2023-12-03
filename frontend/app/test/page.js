@@ -4,6 +4,7 @@ import {loadData} from '../../api/logic/api.mjs'
 import Form from '../../components/form.js'
 import Iterative from "../../components/iterative.js"
 import Button from "../../components/button.js"
+import "../../components/styles/main.css"
 
 class Test extends React.Component{
   constructor(props){
