@@ -2,17 +2,19 @@
 import { useEffect, useState } from 'react'
 import socketIOClient from 'socket.io-client';
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from '../../api/firebase'
+import { query, getDocs, collection, where } from "firebase/firestore";
+import { auth, db } from '../../api/firebase'
 
 function ChatBar() {
   const [user, loading, error] = useAuthState(auth);
-  const [messages, setMessages] = useState(['a']);
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [socket, setSocket] = useState(null);
+  const [username, setUsername] = useState("Default Username");
 
   useEffect(()=>{
-    // const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
-    const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
+    const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
+    // const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     socket.on("chatMessage", (data) => {
       const m = messages
       m.push(data)
@@ -23,9 +25,19 @@ function ChatBar() {
   }, [])
 
   const sendMessage = (message, socket) => {
-    socket.emit("chatMessage", user.displayName + ': ' + message)
+    socket.emit("chatMessage", username + ': ' + message)
     setMessage("")
   }
+
+  useEffect(() =>{
+    if(user){
+      user.getIdToken().then(async function(){
+        const q = query(collection(db, "users"), where("uid", "==", user.uid));
+        const docs = await getDocs(q);
+        setUsername(docs.docs[0].data().name);
+      });
+    }
+  },[user]);
 
   return (
     <div className="chat-container">

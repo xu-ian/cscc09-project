@@ -1154,7 +1154,7 @@ io.on("connection", (socket) => {
 
   socket.on("chatMessage", (data)=>{
     console.log('chatMessage', data)
-    socket.emit('chatMessage', data)
+    io.emit('chatMessage', data)
   })
 
 
