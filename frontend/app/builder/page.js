@@ -14,6 +14,7 @@ import 'grapesjs/dist/css/grapes.min.css'
 import '../../components/styles/main.css'
 
 import PagesSidebar from '../../components/PagesSidebar'
+import ChatBar from '../../components/ChatBar'
 
 import { setupEditor } from "../../api/logic/editorLogic.mjs";
 
@@ -346,6 +347,7 @@ function Builder() {
           }}
           onEditor={onEditor}>
         </GjsEditor>
+        <ChatBar />  
       </div>
       {medias}
       <div className="videocontainer">
