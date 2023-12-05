@@ -13,8 +13,8 @@ function ChatBar() {
   const [username, setUsername] = useState("Default Username");
 
   useEffect(()=>{
-    const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
-    // const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
+    // const socket = socketIOClient("ws://"+process.env.NEXT_PUBLIC_BACKEND_SO);
+    const socket = socketIOClient("wss://"+process.env.NEXT_PUBLIC_BACKEND_SO);
     socket.on("chatMessage", (data) => {
       const m = messages
       m.push(data)
